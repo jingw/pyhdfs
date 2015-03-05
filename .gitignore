@@ -1,5 +1,6 @@
 .coverage
 dist/
+doc/_build/
 .idea/
 __pycache__/
 *.egg-info/
