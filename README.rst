@@ -23,7 +23,9 @@ You can also pass the hostname as part of the URI:
     client = HdfsClient()
     print(client.list_status('//namenode1.example.com:50070;namenode2.example.com:50070/'))
 
-The methods and return values generally map directly to `WebHDFS endpoints <https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html>`_. There are also convenience methods that mimic Python ``os`` methods and HDFS CLI commands (e.g. ``walk`` and ``copy_to_local``).
+The methods and return values generally map directly to `WebHDFS endpoints <https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html>`_. The client also provides convenience methods that mimic Python ``os`` methods and HDFS CLI commands (e.g. ``walk`` and ``copy_to_local``).
+
+``pyhdfs`` logs all HDFS actions at the INFO level, so turning on INFO level logging will give you a debug record for your application.
 
 For more information, see the `full API docs <http://pyhdfs.readthedocs.org/en/latest/>`_.
 
