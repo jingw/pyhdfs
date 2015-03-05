@@ -25,6 +25,8 @@ You can also pass the hostname as part of the URI:
 
 The methods and return values generally map directly to `WebHDFS endpoints <https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html>`_. There are also convenience methods that mimic Python ``os`` methods and HDFS CLI commands (e.g. ``walk`` and ``copy_to_local``).
 
+For more information, see the `full API docs <http://pyhdfs.readthedocs.org/en/latest/>`_.
+
 Installing
 ==========
 
