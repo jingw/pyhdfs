@@ -8,7 +8,6 @@ For details on the WebHDFS endpoints, see the Hadoop documentation:
 from __future__ import absolute_import, print_function, unicode_literals
 import base64
 import binascii
-import collections
 import getpass
 import io
 import logging
@@ -74,18 +73,19 @@ class HdfsHttpException(HdfsException):
     :param javaClassName: Java class name of the exception
     :param status_code: HTTP status code
     :type status_code: int
+    :param kwargs: any extra attributes in case Hadoop adds more stuff
     """
     _expected_status_code = None
 
-    def __init__(self, message, exception, status_code, javaClassName=None):
+    def __init__(self, message, exception, status_code, **kwargs):
         assert self._expected_status_code is None or self._expected_status_code == status_code, (
             "Expected status {} for {}, got {}".format(
                 self._expected_status_code, exception, status_code))
         super(HdfsHttpException, self).__init__(message)
         self.message = message
         self.exception = exception
-        self.javaClassName = javaClassName
         self.status_code = status_code
+        self.__dict__.update(kwargs)
 
 
 # NOTE: the following exceptions are referenced using globals() in _check_response
@@ -142,24 +142,88 @@ class HdfsRuntimeException(HdfsHttpException):
     _expected_status_code = 500
 
 
-def _lenient_namedtuple(typename, field_names):
-    cls = collections.namedtuple(typename, field_names)
-    cls.__new__.__defaults__ = (None,) * len(field_names)
-    return cls
+class _BoilerplateClass(dict):
+    """Turns a dictionary into a nice looking object with a pretty repr.
 
-ContentSummary = _lenient_namedtuple(
-    'ContentSummary',
-    ['directoryCount', 'fileCount', 'length', 'quota', 'spaceConsumed', 'spaceQuota']
-)
-FileChecksum = _lenient_namedtuple(
-    'FileChecksum',
-    ['algorithm', 'bytes', 'length']
-)
-FileStatus = _lenient_namedtuple(
-    'FileStatus',
-    ['accessTime', 'blockSize', 'childrenNum', 'fileId', 'group', 'length', 'modificationTime',
-     'owner', 'pathSuffix', 'permission', 'replication', 'symlink', 'type']
-)
+    Unlike namedtuple, this class is very lenient. It will not error out when it gets extra
+    attributes. This lets us tolerate new HDFS features without any code change at the expense of
+    higher chance of error / more black magic.
+    """
+    def __init__(self, *args, **kwargs):
+        super(_BoilerplateClass, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+    def __repr__(self):
+        kvs = ['{}={!r}'.format(k, v) for k, v in self.items()]
+        return '{}({})'.format(self.__class__.__name__, ', '.join(kvs))
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and dict.__eq__(self, other)
+        )
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class ContentSummary(_BoilerplateClass):
+    """
+    :param spaceQuota: The disk space quota.
+    :type spaceQuota: int
+    :param fileCount: The number of files.
+    :type fileCount: int
+    :param quota: The namespace quota of this directory.
+    :type quota: int
+    :param directoryCount: The number of directories.
+    :type directoryCount: int
+    :param spaceConsumed: The disk space consumed by the content.
+    :type spaceConsumed: int
+    :param length: The number of bytes used by the content.
+    :type length: int
+    """
+
+
+class FileChecksum(_BoilerplateClass):
+    """
+    :param algorithm: The name of the checksum algorithm.
+    :type algorithm: str
+    :param length: The length of the bytes (not the length of the string).
+    :type length: int
+    :param bytes: The byte sequence of the checksum in hexadecimal.
+    :type bytes: str
+    """
+
+
+class FileStatus(_BoilerplateClass):
+    """
+    :param owner: The user who is the owner.
+    :type owner: str
+    :param modificationTime: The modification time.
+    :type modificationTime: int
+    :param symlink: The link target of a symlink.
+    :type symlink: str
+    :param childrenNum: The number of children.
+    :type childrenNum: int
+    :param pathSuffix: The path suffix.
+    :type pathSuffix: str
+    :param blockSize: The block size of a file.
+    :type blockSize: int
+    :param length: The number of bytes in a file.
+    :type length: int
+    :param replication: The number of replication of a file.
+    :type replication: int
+    :param permission: The permission represented as a octal string.
+    :type permission: str
+    :param fileId: The inode ID.
+    :type fileId: int
+    :param type: The type of the path object - FILE, DIRECTORY, or SYMLINK.
+    :type type: str
+    :param group: The group owner.
+    :type group: str
+    :param accessTime: The access time.
+    :type accessTime: int
+    """
 
 
 class HdfsClient(object):
