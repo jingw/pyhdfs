@@ -17,6 +17,11 @@ except AttributeError:  # pragma: no cover
     # Python 2
     unittest.TestCase.assertCountEqual = unittest.TestCase.assertItemsEqual
 
+try:
+    NotADirectoryError
+except NameError:  # pragma: no cover
+    # Python 2
+    NotADirectoryError = OSError
 
 TEST_DIR = '/tmp/pyhdfs_test'
 TEST_FILE = posixpath.join(TEST_DIR, 'some file')
@@ -134,6 +139,12 @@ class TestWebHDFS(unittest.TestCase):
                           lambda: client.delete(TEST_DIR))
         self.assertTrue(client.delete(TEST_DIR, recursive=True))
         self.assertFalse(client.delete(TEST_DIR, recursive=True))
+
+    def test_list_file(self):
+        client = make_client()
+        self._make_dir_and_file(client)
+        self.assertEqual(client.list_status(TEST_FILE), [client.get_file_status(TEST_FILE)])
+        self.assertRaises(NotADirectoryError, lambda: client.listdir(TEST_FILE))
 
     def test_open_offset(self):
         client = make_client()

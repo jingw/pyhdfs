@@ -43,6 +43,12 @@ except NameError:  # pragma: no cover
     # Python 3
     basestring = str
 
+try:
+    NotADirectoryError
+except NameError:  # pragma: no cover
+    # Python 2
+    NotADirectoryError = OSError
+
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = '/webhdfs/v1'
 
@@ -596,7 +602,10 @@ class HdfsClient(object):
 
     def listdir(self, path, **kwargs):
         """Return a list containing names of files in the given path"""
-        return [f.pathSuffix for f in self.list_status(path, **kwargs)]
+        statuses = self.list_status(path, **kwargs)
+        if len(statuses) == 1 and statuses[0].pathSuffix == '' and statuses[0].type == 'FILE':
+            raise NotADirectoryError('Not a directory: {!r}'.format(path))
+        return [f.pathSuffix for f in statuses]
 
     def exists(self, path, **kwargs):
         """Return true if the given path exists"""
