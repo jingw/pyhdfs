@@ -299,6 +299,7 @@ class TestWebHDFS(unittest.TestCase):
             resp.json.return_value = {'RemoteException': {
                 'exception': 'SomeUnknownException',
                 'message': 'some_test_msg',
+                'newThing': '1',
             }}
             return resp
 
@@ -311,7 +312,7 @@ class TestWebHDFS(unittest.TestCase):
                 self.assertEqual(e.status_code, 500)
                 self.assertEqual(e.exception, 'SomeUnknownException')
                 self.assertEqual(e.message, 'SomeUnknownException - some_test_msg')
-                self.assertIsNone(e.javaClassName)
+                self.assertEqual(e.newThing, '1')
             else:
                 self.fail("should have thrown")  # pragma: no cover
 
@@ -526,3 +527,20 @@ class TestWebHDFS(unittest.TestCase):
 
         bad_server_client = make_client('does_not_exist')
         self.assertRaises(HdfsNoServerException, lambda: bad_server_client.get_active_namenode())
+
+
+class TestBoilerplateClass(unittest.TestCase):
+    def test_repr(self):
+        x = FileStatus(owner='somebody', length=5)
+        r = repr(x)
+        self.assertIn('somebody', r)
+        self.assertEqual(eval(r), x)
+
+    def test_equality(self):
+        x = FileStatus(x=1)
+        y = FileChecksum(x=1)
+        z = FileChecksum(x=1)
+        self.assertFalse(x == y)
+        self.assertTrue(x != y)
+        self.assertTrue(y == z)
+        self.assertFalse(y != z)
