@@ -203,6 +203,7 @@ class HdfsClient(object):
         self.max_tries = max_tries
         self.retry_delay = retry_delay
         self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
+        self._last_time_recorded_active = None
 
     def _parse_hosts(self, hosts):
         host_list = list(hosts) if isinstance(hosts, list) else re.split(r',|;', hosts)
@@ -235,10 +236,14 @@ class HdfsClient(object):
         return hosts, path
 
     def _record_last_active(self, host):
-        """Put host first in our host list, so we try it first next time"""
+        """Put host first in our host list, so we try it first next time
+
+        The implementation of get_active_namenode relies on this reordering.
+        """
         if host in self.hosts:  # this check is for when user passes a host at request time
-            # Keep this thread safe
+            # Keep this thread safe: set hosts atomically and update it before the timestamp
             self.hosts = [host] + [h for h in self.hosts if h != host]
+            self._last_time_recorded_active = time.time()
 
     def _request(self, method, path, op, expected_status=httplib.OK, **kwargs):
         """Make a WebHDFS request against the NameNodes
@@ -644,6 +649,22 @@ class HdfsClient(object):
         with self.open(src, **kwargs) as fsrc:
             with io.open(localdest, 'wb') as fdst:
                 shutil.copyfileobj(fsrc, fdst)
+
+    def get_active_namenode(self, max_staleness=None):
+        """Return the address of the currently active NameNode.
+
+        :param max_staleness: This function caches the active NameNode. If this age of this cached
+            result is less than ``max_staleness`` seconds, return it. Otherwise, or if this
+            parameter is None, do a lookup.
+        :type max_staleness: float
+        :raises HdfsNoServerException: can't find an active NameNode
+        """
+        if (max_staleness is None
+                or self._last_time_recorded_active is None
+                or self._last_time_recorded_active < time.time() - max_staleness):
+            # Make a cheap request and rely on the reordering in self._record_last_active
+            self.get_file_status('/')
+        return self.hosts[0]
 
 
 def _transform_user_name_key(kw_dict):

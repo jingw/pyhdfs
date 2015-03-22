@@ -493,3 +493,25 @@ class TestWebHDFS(unittest.TestCase):
             contents = f2.read()
 
         self.assertEqual(original, contents)
+
+    def test_get_active_namenode(self):
+        client = make_client('does_not_exist,localhost')
+        # No cached result
+        self.assertEqual(client.get_active_namenode(100), 'localhost:50070')
+
+        # should hit cache
+        with mock.patch('requests.api.request') as request:
+            self.assertEqual(client.get_active_namenode(100), 'localhost:50070')
+            self.assertFalse(request.called)
+
+        # should make request
+        def wrapped_request(*args, **kwargs):
+            wrapped_request.called = True
+            return original_request(*args, **kwargs)
+        wrapped_request.called = False
+        with mock.patch('requests.api.request', wrapped_request):
+            self.assertEqual(client.get_active_namenode(-1), 'localhost:50070')
+            self.assertTrue(wrapped_request.called)
+
+        bad_server_client = make_client('does_not_exist')
+        self.assertRaises(HdfsNoServerException, lambda: bad_server_client.get_active_namenode())
