@@ -1,0 +1,22 @@
+sudo: required
+language: python
+env:
+  - CDH=cdh4
+  - CDH=cdh5
+python:
+  - "2.7"
+# Doesn't work because of some SyntaxError in simplejson
+#  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+  - "pypy3"
+before_install:
+  - ./install-hdfs.sh
+  - pip install codecov
+install:
+  - pip install -e .
+  - pip install -r dev_requirements.txt
+script: py.test
+after_success: codecov

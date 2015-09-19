@@ -619,10 +619,10 @@ class HdfsClient(object):
                 result[k] = v[1:-1]
             elif encoding == 'hex':
                 assert attr['value'].startswith('0x')
-                result[k] = binascii.unhexlify(v[2:])
+                result[k] = binascii.unhexlify(v[2:].encode('ascii'))
             elif encoding == 'base64':
                 assert attr['value'].startswith('0s')
-                result[k] = base64.b64decode(v[2:])
+                result[k] = base64.b64decode(v[2:].encode('ascii'))
             else:
                 warnings.warn("Unexpected encoding {}".format(encoding))
                 result[k] = v
