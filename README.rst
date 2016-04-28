@@ -27,7 +27,7 @@ The methods and return values generally map directly to `WebHDFS endpoints <http
 
 ``pyhdfs`` logs all HDFS actions at the INFO level, so turning on INFO level logging will give you a debug record for your application.
 
-For more information, see the `full API docs <http://pyhdfs.readthedocs.org/en/latest/>`_.
+For more information, see the `full API docs <http://pyhdfs.readthedocs.io/en/latest/>`_.
 
 Installing
 ==========
