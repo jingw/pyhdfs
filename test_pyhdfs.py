@@ -227,7 +227,7 @@ class TestWebHDFS(unittest.TestCase):
                           lambda: client.get_file_status('/does_not_exist'))
         self.assertRaises(HdfsFileAlreadyExistsException, lambda: client.create('/tmp', ''))
         self.assertRaises(HdfsAccessControlException,
-                          lambda: client.set_owner('/user', owner='blah', user_name='blah'))
+                          lambda: client.set_owner('/', owner='blah', user_name='blah'))
         self.assertRaises(HdfsIllegalArgumentException,
                           lambda: client._request('PUT', '/', 'blah'))
 
