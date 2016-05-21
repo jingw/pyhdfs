@@ -1,5 +1,9 @@
 # encoding: utf-8
 from __future__ import absolute_import, print_function, unicode_literals
+
+import logging
+import os
+import posixpath
 import subprocess
 import tempfile
 import unittest
@@ -7,7 +11,21 @@ import unittest
 import mock
 from requests.api import request as original_request
 
-from pyhdfs import *
+from pyhdfs import FileChecksum
+from pyhdfs import FileStatus
+from pyhdfs import HdfsAccessControlException
+from pyhdfs import HdfsClient
+from pyhdfs import HdfsException
+from pyhdfs import HdfsFileAlreadyExistsException
+from pyhdfs import HdfsFileNotFoundException
+from pyhdfs import HdfsHttpException
+from pyhdfs import HdfsIOException
+from pyhdfs import HdfsIllegalArgumentException
+from pyhdfs import HdfsInvalidPathException
+from pyhdfs import HdfsNoServerException
+from pyhdfs import HdfsPathIsNotEmptyDirectoryException
+from pyhdfs import HdfsSnapshotException
+from pyhdfs import HdfsUnsupportedOperationException
 
 
 try:
