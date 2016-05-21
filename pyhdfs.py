@@ -159,8 +159,8 @@ class _BoilerplateClass(dict):
 
     def __eq__(self, other):
         return (
-            isinstance(other, self.__class__)
-            and dict.__eq__(self, other)
+            isinstance(other, self.__class__) and
+            dict.__eq__(self, other)
         )
 
     def __ne__(self, other):
@@ -734,9 +734,9 @@ class HdfsClient(object):
         :type max_staleness: float
         :raises HdfsNoServerException: can't find an active NameNode
         """
-        if (max_staleness is None
-                or self._last_time_recorded_active is None
-                or self._last_time_recorded_active < time.time() - max_staleness):
+        if (max_staleness is None or
+                self._last_time_recorded_active is None or
+                self._last_time_recorded_active < time.time() - max_staleness):
             # Make a cheap request and rely on the reordering in self._record_last_active
             self.get_file_status('/')
         return self.hosts[0]
