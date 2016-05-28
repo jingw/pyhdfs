@@ -101,8 +101,7 @@ class TestWebHDFS(unittest.TestCase):
 
         # Get its status
         status = client.get_file_status(TEST_DIR)
-        if os.environ.get('CDH') != 'cdh4':
-            self.assertEqual(status.childrenNum, 0)
+        self.assertEqual(status.childrenNum, 0)
         self.assertEqual(status.length, 0)
         self.assertEqual(status.type, 'DIRECTORY')
         # Get listing
@@ -119,8 +118,7 @@ class TestWebHDFS(unittest.TestCase):
 
         # Redo metadata queries on TEST_DIR
         status = client.get_file_status(TEST_DIR)
-        if os.environ.get('CDH') != 'cdh4':
-            self.assertEqual(status.childrenNum, 1)
+        self.assertEqual(status.childrenNum, 1)
         self.assertEqual(status.length, 0)
         self.assertEqual(status.type, 'DIRECTORY')
         listing = client.list_status(TEST_DIR)
@@ -132,8 +130,7 @@ class TestWebHDFS(unittest.TestCase):
 
         # Metadata queries on TEST_FILE
         status = client.get_file_status(TEST_FILE)
-        if os.environ.get('CDH') != 'cdh4':
-            self.assertEqual(status.childrenNum, 0)
+        self.assertEqual(status.childrenNum, 0)
         self.assertEqual(status.length, len(FILE_CONTENTS))
         self.assertEqual(status.type, 'FILE')
         listing = client.list_status(TEST_FILE)
@@ -156,11 +153,7 @@ class TestWebHDFS(unittest.TestCase):
             self.assertEqual(f.read(), FILE_CONTENTS + FILE_CONTENTS2)
 
         # Clean up
-        expected = (
-            HdfsIOException if os.environ.get('CDH') == 'cdh4'
-            else HdfsPathIsNotEmptyDirectoryException
-        )
-        self.assertRaises(expected, lambda: client.delete(TEST_DIR))
+        self.assertRaises(HdfsPathIsNotEmptyDirectoryException, lambda: client.delete(TEST_DIR))
         self.assertTrue(client.delete(TEST_DIR, recursive=True))
         self.assertFalse(client.delete(TEST_DIR, recursive=True))
 
@@ -374,7 +367,6 @@ class TestWebHDFS(unittest.TestCase):
         self.assertRaises(ValueError, lambda: client.concat('/a', 'b'))
         self.assertRaises(NotImplementedError, lambda: client.concat('/a', ['/,']))
 
-    @unittest.skipIf(os.environ.get('CDH') == 'cdh4', "I can't figure out what's going on in CDH4")
     def test_create_symlink(self):
         client = make_client()
         self._make_empty_dir(client)
@@ -382,7 +374,6 @@ class TestWebHDFS(unittest.TestCase):
         self.assertRaises(HdfsUnsupportedOperationException,
                           lambda: client.create_symlink(symlink, destination=TEST_DIR))
 
-    @unittest.skipIf(os.environ.get('CDH') == 'cdh4', "Not supported in CDH4")
     def test_snapshots(self):
         client = make_client()
         self._make_empty_dir(client)
@@ -400,7 +391,6 @@ class TestWebHDFS(unittest.TestCase):
         client.rename_snapshot(TEST_DIR, 'x', 'y')
         client.delete_snapshot(TEST_DIR, 'y')
 
-    @unittest.skipIf(os.environ.get('CDH') == 'cdh4', "Not supported in CDH4")
     def test_xattrs(self):
         self.maxDiff = None
         client = make_client()

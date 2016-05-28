@@ -1,12 +1,9 @@
 sudo: required
 language: python
 env:
-  - CDH=cdh4
   - CDH=cdh5
 python:
   - "2.7"
-# Doesn't work because of some SyntaxError in simplejson
-#  - "3.2"
   - "3.3"
   - "3.4"
   - "3.5"
