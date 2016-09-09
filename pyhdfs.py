@@ -18,7 +18,7 @@ import re
 import shutil
 import time
 import warnings
-
+from requests_kerberos import HTTPKerberosAuth, OPTIONAL
 import requests
 import requests.api
 import requests.exceptions
@@ -322,6 +322,7 @@ class HdfsClient(object):
         All kwargs are passed as query params to the WebHDFS server.
         """
         hosts, path = self._parse_path(path)
+        kerberos_auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL,principal=self.user_name)
         _transform_user_name_key(kwargs)
         kwargs.setdefault('user.name', self.user_name)
 
@@ -335,7 +336,7 @@ class HdfsClient(object):
                     response = requests.api.request(
                         method,
                         'http://{}{}{}'.format(host, WEBHDFS_PATH, url_quote(path.encode('utf-8'))),
-                        params=kwargs, timeout=self.timeout, allow_redirects=False,
+                        params=kwargs, timeout=self.timeout, allow_redirects=False,auth=kerberos_auth，
                     )
                 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                     _logger.log(log_level, "Failed to reach to %s (attempt %d/%d)",
