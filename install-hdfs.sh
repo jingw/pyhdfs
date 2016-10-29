@@ -5,7 +5,10 @@ sudo wget "http://archive.cloudera.com/$CDH/ubuntu/precise/amd64/cdh/cloudera.li
 # work around broken list
 sudo sed -i 's mirror.infra.cloudera.com/archive archive.cloudera.com g' \
     /etc/apt/sources.list.d/cloudera.list
-sudo apt-get update
+sudo apt-get update \
+    -o Dir::Etc::sourcelist=sources.list.d/cloudera.list \
+    -o Dir::Etc::sourceparts=/does/not/exist \
+    --no-list-cleanup
 sudo apt-get install -y --force-yes hadoop-hdfs-datanode hadoop-hdfs-namenode
 
 # Set up config
