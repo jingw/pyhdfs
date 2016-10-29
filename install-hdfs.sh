@@ -18,7 +18,5 @@ sudo -u hdfs hdfs namenode -format -nonInteractive
 sudo service hadoop-hdfs-datanode start || (grep . /var/log/hadoop-hdfs/* && exit 2)
 sudo service hadoop-hdfs-namenode start || (grep . /var/log/hadoop-hdfs/* && exit 2)
 
-sudo -u hdfs hdfs dfsadmin -safemode leave
-
 sudo -u hdfs hdfs dfs -mkdir /tmp
 sudo -u hdfs hdfs dfs -chmod -R 1777 /tmp
