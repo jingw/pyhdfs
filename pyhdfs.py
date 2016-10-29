@@ -126,6 +126,10 @@ class HdfsPathIsNotEmptyDirectoryException(HdfsIOException):
     pass
 
 
+class HdfsRetriableException(HdfsIOException):
+    pass
+
+
 class HdfsStandbyException(HdfsIOException):
     pass
 
@@ -343,8 +347,8 @@ class HdfsClient(object):
                     continue
                 try:
                     _check_response(response, expected_status)
-                except HdfsStandbyException:
-                    _logger.log(log_level, "%s is in standby mode (attempt %d/%d)",
+                except (HdfsRetriableException, HdfsStandbyException):
+                    _logger.log(log_level, "%s is in startup or standby mode (attempt %d/%d)",
                                 host, i + 1, self.max_tries, exc_info=True)
                     continue
                 # Note: standby NN can still return basic validation errors, so non-StandbyException
