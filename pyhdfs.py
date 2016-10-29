@@ -51,7 +51,7 @@ except NameError:  # pragma: no cover
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = '/webhdfs/v1'
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 _logger = logging.getLogger(__name__)
 
 
