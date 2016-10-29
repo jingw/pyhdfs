@@ -98,7 +98,7 @@ class HdfsHadoopIllegalArgumentException(HdfsIllegalArgumentException):
     pass
 
 
-class HdfsInvalidPathException(HdfsIllegalArgumentException):
+class HdfsInvalidPathException(HdfsHadoopIllegalArgumentException):
     pass
 
 
@@ -114,6 +114,18 @@ class HdfsIOException(HdfsHttpException):
     _expected_status_code = 403
 
 
+class HdfsQuotaExceededException(HdfsIOException):
+    pass
+
+
+class HdfsNSQuotaExceededException(HdfsQuotaExceededException):
+    pass
+
+
+class HdfsDSQuotaExceededException(HdfsQuotaExceededException):
+    pass
+
+
 class HdfsAccessControlException(HdfsIOException):
     pass
 
@@ -126,6 +138,12 @@ class HdfsPathIsNotEmptyDirectoryException(HdfsIOException):
     pass
 
 
+# thrown in safe mode
+class HdfsRemoteException(HdfsIOException):
+    pass
+
+
+# thrown in startup mode
 class HdfsRetriableException(HdfsIOException):
     pass
 
@@ -138,7 +156,7 @@ class HdfsSnapshotException(HdfsIOException):
     pass
 
 
-class HdfsFileNotFoundException(HdfsHttpException):
+class HdfsFileNotFoundException(HdfsIOException):
     _expected_status_code = 404
 
 
