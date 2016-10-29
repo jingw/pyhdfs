@@ -24,4 +24,9 @@
     <name>dfs.webhdfs.enabled</name>
     <value>true</value>
   </property>
+
+  <property>
+    <name>dfs.namenode.safemode.extension</name>
+    <value>0</value>
+  </property>
 </configuration>
