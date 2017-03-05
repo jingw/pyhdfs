@@ -19,6 +19,7 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     long_description = readme.read()
 with open(os.path.join(os.path.dirname(__file__), 'pyhdfs.py')) as py:
