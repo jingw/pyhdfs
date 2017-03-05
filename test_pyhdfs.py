@@ -61,6 +61,7 @@ def _hacked_request(method, url, **kwargs):
     url = url.replace('quickstart.cloudera', 'localhost')
     return original_request(method, url, **kwargs)
 
+
 hack_quickstart_cloudera_to_local = mock.patch('requests.api.request', _hacked_request)
 
 
