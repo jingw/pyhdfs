@@ -10,7 +10,7 @@ python:
   - "3.5"
   - "3.6"
   - "pypy"
-  - "pypy3"
+  - "pypy3.3-5.2-alpha1"
 before_install:
   - ./install-hdfs.sh
   - pip install codecov
