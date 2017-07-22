@@ -1,10 +1,9 @@
 #!/bin/bash -eux
 
-sudo wget "http://archive.cloudera.com/$CDH/ubuntu/precise/amd64/cdh/cloudera.list" \
+source /etc/lsb-release
+
+sudo wget "http://archive.cloudera.com/${CDH}/ubuntu/${DISTRIB_CODENAME}/amd64/cdh/cloudera.list" \
     -O /etc/apt/sources.list.d/cloudera.list
-# work around broken list
-sudo sed -i 's mirror.infra.cloudera.com/archive archive.cloudera.com g' \
-    /etc/apt/sources.list.d/cloudera.list
 sudo apt-get update \
     -o Dir::Etc::sourcelist=sources.list.d/cloudera.list \
     -o Dir::Etc::sourceparts=/does/not/exist \
