@@ -1,16 +1,15 @@
 sudo: required
+dist: trusty
 language: python
 env:
   - CDH=cdh5
 python:
   # https://docs.python.org/devguide/#status-of-python-branches
   - "2.7"
-  - "3.3"
-  - "3.4"
   - "3.5"
   - "3.6"
-  - "pypy"
-  - "pypy3.3-5.2-alpha1"
+  - "pypy-5.7.1"
+  - "pypy3.3-5.5-alpha"
 before_install:
   - ./install-hdfs.sh
   - pip install codecov
