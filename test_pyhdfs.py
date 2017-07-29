@@ -2,13 +2,14 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
-import os
 import posixpath
 import subprocess
 import tempfile
 import unittest
 
 import mock
+import os
+import requests
 from requests.api import request as original_request
 
 from pyhdfs import FileChecksum
@@ -542,6 +543,21 @@ class TestWebHDFS(unittest.TestCase):
 
         bad_server_client = make_client('does_not_exist')
         self.assertRaises(HdfsNoServerException, lambda: bad_server_client.get_active_namenode())
+
+    def test_invalid_requests_kwargs(self):
+        """some kwargs are reserved"""
+        self.assertRaisesRegexp(
+            ValueError, 'Cannot override', lambda: HdfsClient(requests_kwargs={'url': 'test'})
+        )
+
+    def test_requests_kwargs(self):
+        client = make_client(requests_kwargs={'proxies': {'http': 'localhost:99999'}})
+        self.assertRaises(HdfsNoServerException, lambda: client.get_file_status('/'))
+
+    def test_requests_session(self):
+        with requests.Session() as session:
+            client = make_client(requests_session=session)
+            assert client.exists('/tmp')
 
 
 class TestBoilerplateClass(unittest.TestCase):

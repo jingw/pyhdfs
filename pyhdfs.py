@@ -19,7 +19,6 @@ import shutil
 import time
 import warnings
 
-import requests
 import requests.api
 import requests.exceptions
 import simplejson
@@ -265,20 +264,25 @@ class HdfsClient(object):
     :type randomize_hosts: bool
     :param user_name: What Hadoop user to run as. Defaults to the ``HADOOP_USER_NAME`` environment
         variable if present, otherwise ``getpass.getuser()``.
-    :param timeout: How long to wait on a single NameNode before moving on. In some cases the
-        standby NameNode can be unresponsive (e.g. loading fsimage or checkpointing), so we don't
-        want to block on it.
+    :param timeout: How long to wait on a single NameNode in seconds before moving on.
+        In some cases the standby NameNode can be unresponsive (e.g. loading fsimage or
+        checkpointing), so we don't want to block on it.
     :type timeout: float
     :param max_tries: How many times to retry a request for each NameNode. If NN1 is standby and NN2
         is active, we might first contact NN1 and then observe a failover to NN1 when we contact
         NN2. In this situation we want to retry against NN1.
     :type max_tries: int
-    :param retry_delay: How long to wait before going through NameNodes again
+    :param retry_delay: How long to wait in seconds before going through NameNodes again
     :type retry_delay: float
+    :param requests_session: A ``requests.Session`` object for advanced usage. If absent, this
+        class will use the default requests behavior of making a new session per HTTP request.
+        Caller is responsible for closing session.
+    :param requests_kwargs: Additional ``**kwargs`` to pass to requests
     """
 
     def __init__(self, hosts='localhost', randomize_hosts=True, user_name=None,
-                 timeout=20, max_tries=2, retry_delay=5):
+                 timeout=20, max_tries=2, retry_delay=5,
+                 requests_session=None, requests_kwargs=None):
         """Create a new HDFS client"""
         if max_tries < 1:
             raise ValueError("Invalid max_tries: {}".format(max_tries))
@@ -296,6 +300,11 @@ class HdfsClient(object):
         self.retry_delay = retry_delay
         self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
         self._last_time_recorded_active = None
+        self._requests_session = requests_session or requests.api
+        self._requests_kwargs = requests_kwargs or {}
+        for k in ('method', 'url', 'data', 'timeout', 'stream', 'params'):
+            if k in self._requests_kwargs:
+                raise ValueError("Cannot override requests argument {}".format(k))
 
     def _parse_hosts(self, hosts):
         host_list = list(hosts) if isinstance(hosts, list) else re.split(r',|;', hosts)
@@ -354,10 +363,11 @@ class HdfsClient(object):
             log_level = logging.DEBUG if i < self.max_tries - 1 else logging.WARNING
             for host in hosts:
                 try:
-                    response = requests.api.request(
+                    response = self._requests_session.request(
                         method,
                         'http://{}{}{}'.format(host, WEBHDFS_PATH, url_quote(path.encode('utf-8'))),
                         params=kwargs, timeout=self.timeout, allow_redirects=False,
+                        **self._requests_kwargs
                     )
                 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                     _logger.log(log_level, "Failed to reach to %s (attempt %d/%d)",
@@ -412,7 +422,8 @@ class HdfsClient(object):
         metadata_response = self._put(
             path, 'CREATE', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
         assert not metadata_response.content
-        data_response = requests.put(metadata_response.headers['location'], data=data)
+        data_response = self._requests_session.put(
+            metadata_response.headers['location'], data=data, **self._requests_kwargs)
         _check_response(data_response, expected_status=httplib.CREATED)
         assert not data_response.content
 
@@ -425,7 +436,8 @@ class HdfsClient(object):
         """
         metadata_response = self._post(
             path, 'APPEND', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
-        data_response = requests.post(metadata_response.headers['location'], data=data)
+        data_response = self._requests_session.post(
+            metadata_response.headers['location'], data=data, **self._requests_kwargs)
         _check_response(data_response)
         assert not data_response.content
 
@@ -461,7 +473,8 @@ class HdfsClient(object):
         """
         metadata_response = self._get(
             path, 'OPEN', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
-        data_response = requests.get(metadata_response.headers['location'], stream=True)
+        data_response = self._requests_session.get(
+            metadata_response.headers['location'], stream=True, **self._requests_kwargs)
         _check_response(data_response)
         return data_response.raw
 
@@ -542,7 +555,8 @@ class HdfsClient(object):
         metadata_response = self._get(
             path, 'GETFILECHECKSUM', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
         assert not metadata_response.content
-        data_response = requests.get(metadata_response.headers['location'])
+        data_response = self._requests_session.get(
+            metadata_response.headers['location'], **self._requests_kwargs)
         _check_response(data_response)
         return FileChecksum(**_json(data_response)['FileChecksum'])
 
