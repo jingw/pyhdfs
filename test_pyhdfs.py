@@ -2,13 +2,14 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
+import os
 import posixpath
 import subprocess
 import tempfile
 import unittest
 
 import mock
-import os
+import pytest
 import requests
 from requests.api import request as original_request
 
@@ -28,13 +29,19 @@ from pyhdfs import HdfsPathIsNotEmptyDirectoryException
 from pyhdfs import HdfsSnapshotException
 from pyhdfs import HdfsUnsupportedOperationException
 
-
 try:
     # Python 3
     unittest.TestCase.assertCountEqual
 except AttributeError:  # pragma: no cover
     # Python 2
     unittest.TestCase.assertCountEqual = unittest.TestCase.assertItemsEqual
+
+try:
+    # Python 3.2
+    unittest.TestCase.assertRaisesRegex
+except AttributeError:
+    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+
 
 try:
     NotADirectoryError
@@ -353,7 +360,10 @@ class TestWebHDFS(unittest.TestCase):
             client.get_file_status('/')
         client.get_file_status('//localhost/')
         client.get_file_status('hdfs://localhost:50070/')
-        client.get_file_status('foobar://localhost:50070/')
+        with pytest.warns(UserWarning) as record:
+            client.get_file_status('foobar://localhost:50070/')
+        assert len(record) == 1
+        assert record[0].message.args[0] == "Unexpected scheme foobar"
         assert client.hosts == ['does_not_exist:50070']
 
     def test_concat(self):
@@ -546,7 +556,7 @@ class TestWebHDFS(unittest.TestCase):
 
     def test_invalid_requests_kwargs(self):
         """some kwargs are reserved"""
-        with self.assertRaisesRegexp(ValueError, 'Cannot override'):
+        with self.assertRaisesRegex(ValueError, 'Cannot override'):
             HdfsClient(requests_kwargs={'url': 'test'})
 
     def test_requests_kwargs(self):
