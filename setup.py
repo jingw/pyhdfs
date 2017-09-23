@@ -30,7 +30,7 @@ with open(os.path.join(os.path.dirname(__file__), 'dev_requirements.txt')) as de
 setup(
     name="PyHDFS",
     version=version,
-    description="Pure Python WebHDFS client",
+    description="Pure Python HDFS client",
     long_description=long_description,
     url='https://github.com/jingw/pyhdfs',
     author="Jing Wang",
