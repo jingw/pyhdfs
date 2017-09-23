@@ -55,7 +55,7 @@ _logger = logging.getLogger(__name__)
 
 
 class HdfsException(Exception):
-    """Base class for all error while communicating with WebHDFS server"""
+    """Base class for all errors while communicating with WebHDFS server"""
     pass
 
 
