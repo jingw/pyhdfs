@@ -15,6 +15,6 @@ before_install:
   - pip install codecov
 install:
   - pip install -e .
-  - pip install -r dev_requirements.txt
+  - pip install --upgrade -r dev_requirements.txt
 script: PYTHONHASHSEED=random pytest
 after_success: codecov
