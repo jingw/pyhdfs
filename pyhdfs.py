@@ -305,7 +305,7 @@ class HdfsClient(object):
         self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
         self._last_time_recorded_active = None
         self._requests_session = requests_session or requests.api
-        #backward compatibility, does not remove WEBHDFS_PATH constant
+        # backward compatibility, does not remove WEBHDFS_PATH
         global WEBHDFS_PATH
         WEBHDFS_PATH = webhdfs_path
         self._requests_kwargs = requests_kwargs or {}
