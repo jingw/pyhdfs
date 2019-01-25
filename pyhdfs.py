@@ -273,8 +273,9 @@ class HdfsClient(object):
     :type max_tries: int
     :param retry_delay: How long to wait in seconds before going through NameNodes again
     :type retry_delay: float
-    :param webhdfs_path: The uri pattern in webhdfs request is http://{host}/{webhdfs_path}/{path},
-        the default value of webhdfs_path is '/webhdfs/v1'
+    :param webhdfs_path: The HTTP URL format in webhdfs request is 
+        ``http://<HOST>:<HTTP_PORT><WEBHDFS_PATH><PATH>?op=...``, this param could set WEBHDFS_PATH
+        as the customized one, and the default value of WEBHDFS_PATH is '/webhdfs/v1'
     :type webhdfs_path: str
     :param requests_session: A ``requests.Session`` object for advanced usage. If absent, this
         class will use the default requests behavior of making a new session per HTTP request.
