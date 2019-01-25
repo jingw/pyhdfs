@@ -274,7 +274,7 @@ class HdfsClient(object):
     :type max_tries: int
     :param retry_delay: How long to wait in seconds before going through NameNodes again
     :type retry_delay: float
-    :param webhdfs_path: The HTTP URL format in webhdfs request is 
+    :param webhdfs_path: The HTTP URL format in webhdfs request is
         ``http://<HOST>:<HTTP_PORT><WEBHDFS_PATH><PATH>?op=...``, this param could set WEBHDFS_PATH
         as the customized one, and the default value of WEBHDFS_PATH is '/webhdfs/v1'
     :type webhdfs_path: str
