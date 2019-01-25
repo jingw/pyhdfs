@@ -48,6 +48,7 @@ except NameError:  # pragma: no cover
     NotADirectoryError = OSError
 
 DEFAULT_PORT = 50070
+WEBHDFS_PATH = '/webhdfs/v1'
 
 __version__ = '0.2.1'
 _logger = logging.getLogger(__name__)
@@ -304,7 +305,9 @@ class HdfsClient(object):
         self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
         self._last_time_recorded_active = None
         self._requests_session = requests_session or requests.api
-        self.webhdfs_path = webhdfs_path
+        #backward compatibility, does not remove WEBHDFS_PATH constant
+        global WEBHDFS_PATH
+        WEBHDFS_PATH = webhdfs_path
         self._requests_kwargs = requests_kwargs or {}
         for k in ('method', 'url', 'data', 'timeout', 'stream', 'params'):
             if k in self._requests_kwargs:
@@ -369,7 +372,7 @@ class HdfsClient(object):
                 try:
                     response = self._requests_session.request(
                         method,
-                        'http://{}{}{}'.format(host, self.webhdfs_path, url_quote(path.encode('utf-8'))),
+                        'http://{}{}{}'.format(host, WEBHDFS_PATH, url_quote(path.encode('utf-8'))),
                         params=kwargs, timeout=self.timeout, allow_redirects=False,
                         **self._requests_kwargs
                     )
