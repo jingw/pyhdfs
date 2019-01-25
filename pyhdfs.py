@@ -48,7 +48,6 @@ except NameError:  # pragma: no cover
     NotADirectoryError = OSError
 
 DEFAULT_PORT = 50070
-WEBHDFS_PATH = '/webhdfs/v1'
 
 __version__ = '0.2.1'
 _logger = logging.getLogger(__name__)
@@ -274,6 +273,9 @@ class HdfsClient(object):
     :type max_tries: int
     :param retry_delay: How long to wait in seconds before going through NameNodes again
     :type retry_delay: float
+    :param webhdfs_path: The uri pattern in webhdfs request is http://{host}/{webhdfs_path}/{path},
+        the default value of webhdfs_path is '/webhdfs/v1'
+    :type str
     :param requests_session: A ``requests.Session`` object for advanced usage. If absent, this
         class will use the default requests behavior of making a new session per HTTP request.
         Caller is responsible for closing session.
@@ -281,7 +283,7 @@ class HdfsClient(object):
     """
 
     def __init__(self, hosts='localhost', randomize_hosts=True, user_name=None,
-                 timeout=20, max_tries=2, retry_delay=5,
+                 timeout=20, max_tries=2, retry_delay=5, webhdfs_path = '/webhdfs/v1',
                  requests_session=None, requests_kwargs=None):
         """Create a new HDFS client"""
         if max_tries < 1:
@@ -301,6 +303,7 @@ class HdfsClient(object):
         self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
         self._last_time_recorded_active = None
         self._requests_session = requests_session or requests.api
+        self.webhdfs_path = webhdfs_path
         self._requests_kwargs = requests_kwargs or {}
         for k in ('method', 'url', 'data', 'timeout', 'stream', 'params'):
             if k in self._requests_kwargs:
@@ -365,7 +368,7 @@ class HdfsClient(object):
                 try:
                     response = self._requests_session.request(
                         method,
-                        'http://{}{}{}'.format(host, WEBHDFS_PATH, url_quote(path.encode('utf-8'))),
+                        'http://{}{}{}'.format(host, self.webhdfs_path, url_quote(path.encode('utf-8'))),
                         params=kwargs, timeout=self.timeout, allow_redirects=False,
                         **self._requests_kwargs
                     )
