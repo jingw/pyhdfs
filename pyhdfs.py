@@ -275,7 +275,7 @@ class HdfsClient(object):
     :type retry_delay: float
     :param webhdfs_path: The uri pattern in webhdfs request is http://{host}/{webhdfs_path}/{path},
         the default value of webhdfs_path is '/webhdfs/v1'
-    :type str
+    :type webhdfs_path: str
     :param requests_session: A ``requests.Session`` object for advanced usage. If absent, this
         class will use the default requests behavior of making a new session per HTTP request.
         Caller is responsible for closing session.
@@ -283,7 +283,7 @@ class HdfsClient(object):
     """
 
     def __init__(self, hosts='localhost', randomize_hosts=True, user_name=None,
-                 timeout=20, max_tries=2, retry_delay=5, webhdfs_path = '/webhdfs/v1',
+                 timeout=20, max_tries=2, retry_delay=5, webhdfs_path='/webhdfs/v1',
                  requests_session=None, requests_kwargs=None):
         """Create a new HDFS client"""
         if max_tries < 1:
