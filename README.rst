@@ -81,11 +81,10 @@ Development testing
 .. image:: http://codecov.io/github/jingw/pyhdfs/coverage.svg?branch=master
     :target: http://codecov.io/github/jingw/pyhdfs?branch=master
 
-First get an environment with HDFS.
-The `Cloudera QuickStart VM <http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cloudera_quickstart_vm.html>`_ works fine for this.
-(Note that the VM only comes with Python 2.6, so you might want to use your host and forward port 50070.)
-
-WARNING: The tests create and delete ``hdfs://localhost/tmp/pyhdfs_test``.
+First run ``install-hdfs.sh x.y.z``, which will download, extract, and run the HDFS NN/DN processes in the current directory.
+(Replace ``x.y.z`` with a real version.)
+Then run the following commands.
+Note they will create and delete ``hdfs://localhost/tmp/pyhdfs_test``.
 
 Python 3::
 

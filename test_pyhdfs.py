@@ -64,15 +64,6 @@ def make_client(*args, **kwargs):
     return HdfsClient(*args, retry_delay=0.1, **kwargs)
 
 
-def _hacked_request(method, url, **kwargs):
-    """Hack to "redirect" hostnames that the VM knows to localhost"""
-    url = url.replace('quickstart.cloudera', 'localhost')
-    return original_request(method, url, **kwargs)
-
-
-hack_quickstart_cloudera_to_local = mock.patch('requests.api.request', _hacked_request)
-
-
 def _standby_response():
     resp = mock.Mock()
     resp.status_code = 403
@@ -83,7 +74,6 @@ def _standby_response():
     return resp
 
 
-@hack_quickstart_cloudera_to_local
 class TestWebHDFS(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -91,7 +81,7 @@ class TestWebHDFS(unittest.TestCase):
 
     def _make_empty_dir(self, client):
         # Get an empty dir
-        client.delete(TEST_DIR, recursive=True, user_name='hdfs')
+        client.delete(TEST_DIR, recursive=True)
         assert not client.delete(TEST_DIR, recursive=True)
         assert client.mkdirs(TEST_DIR)
 
@@ -211,7 +201,7 @@ class TestWebHDFS(unittest.TestCase):
         assert client.get_file_status(TEST_DIR).permission == '500'
 
     def test_set_owner(self):
-        client = make_client(user_name='hdfs')
+        client = make_client()
         self._make_empty_dir(client)
         client.set_times(TEST_DIR, modificationtime=1234)
         assert client.get_file_status(TEST_DIR).modificationTime == 1234
@@ -219,7 +209,7 @@ class TestWebHDFS(unittest.TestCase):
         assert client.get_file_status(TEST_DIR).accessTime == 5678
 
     def test_set_times(self):
-        client = make_client(user_name='hdfs')
+        client = make_client()
         self._make_empty_dir(client)
         client.set_owner(TEST_DIR, owner='some_new_user')
         assert client.get_file_status(TEST_DIR).owner == 'some_new_user'
@@ -238,7 +228,7 @@ class TestWebHDFS(unittest.TestCase):
             client._request('PUT', '/', 'blah')
 
     def test_funny_characters(self):
-        client = make_client(user_name='hdfs')
+        client = make_client()
         self._make_empty_dir(client)
         ugly_dir = posixpath.join(TEST_DIR, PATHOLOGICAL_NAME)
         ugly_file = posixpath.join(TEST_DIR, PATHOLOGICAL_NAME, PATHOLOGICAL_NAME)
@@ -368,7 +358,7 @@ class TestWebHDFS(unittest.TestCase):
 
     def test_concat(self):
         MIN_BLOCK_SIZE = 1024 * 1024
-        client = make_client(user_name='hdfs')
+        client = make_client()
         self._make_empty_dir(client)
         p1 = posixpath.join(TEST_DIR, PATHOLOGICAL_NAME)
         # Commas not supported
@@ -408,10 +398,7 @@ class TestWebHDFS(unittest.TestCase):
 
         # WebHDFS doesn't support the dfsadmin command to enable snapshots, so this test makes
         # some assumptions to turn them on.
-        subprocess.check_call(
-            ['hdfs', 'dfsadmin', '-allowSnapshot', TEST_DIR],
-            env={'HADOOP_USER_NAME': 'hdfs'},
-        )
+        subprocess.check_call(['hdfs', 'dfsadmin', '-allowSnapshot', TEST_DIR])
 
         path = client.create_snapshot(TEST_DIR, snapshotname='x')
         assert path == posixpath.join(TEST_DIR, '.snapshot', 'x')

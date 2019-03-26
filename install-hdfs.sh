@@ -1,24 +1,28 @@
 #!/bin/bash -eux
 
-source /etc/lsb-release
+version=${1:-$VERSION}
+tgz=download/hadoop-$version.tar.gz
+if [[ ! -e  "$tgz" || "$(md5sum "$tgz")" != ${MD5:-}* ]]
+then
+    mkdir -p download
+    curl -o "$tgz" "http://mirrors.ocf.berkeley.edu/apache/hadoop/common/hadoop-$version/hadoop-$version.tar.gz"
+    [[ "$(md5sum "$tgz")" = ${MD5:-}* ]]
+fi
 
-sudo wget "http://archive.cloudera.com/${CDH}/ubuntu/${DISTRIB_CODENAME}/amd64/cdh/cloudera.list" \
-    -O /etc/apt/sources.list.d/cloudera.list
-sudo apt-get update \
-    -o Dir::Etc::sourcelist=sources.list.d/cloudera.list \
-    -o Dir::Etc::sourceparts=/does/not/exist \
-    --no-list-cleanup
-sudo apt-get install -y --force-yes hadoop-hdfs-datanode hadoop-hdfs-namenode
+mkdir -p hadoop
+tar -xzf "$tgz" -C hadoop --strip-components 1
 
-# Set up config
-sudo cp travis-hdfs-conf/* /etc/hadoop/conf
+cp travis-hdfs-conf/* hadoop/etc/hadoop
 
-# Dump everything with the file name prefixed for debugging
-grep . /etc/hadoop/conf/*
+hadoop/bin/hdfs namenode -format
+hadoop/bin/hdfs namenode > namenode.log 2>&1 &
+hadoop/bin/hdfs datanode > datanode.log 2>&1 &
 
-sudo -u hdfs hdfs namenode -format -nonInteractive
-sudo service hadoop-hdfs-datanode start || (grep . /var/log/hadoop-hdfs/* && exit 2)
-sudo service hadoop-hdfs-namenode start || (grep . /var/log/hadoop-hdfs/* && exit 2)
+until hadoop/bin/hdfs dfs -touchz /healthcheck
+do
+    tail namenode.log datanode.log
+    sleep 1
+done
 
-sudo -u hdfs hdfs dfs -mkdir /tmp
-sudo -u hdfs hdfs dfs -chmod -R 1777 /tmp
+hadoop/bin/hdfs dfs -mkdir /tmp
+hadoop/bin/hdfs dfs -chmod -R 1777 /tmp

@@ -1,7 +1,10 @@
 dist: xenial
+cache:
+  directories:
+    - download
 language: python
 env:
-  - CDH=cdh5
+  - VERSION=2.6.5 MD5=967c24f3c15fcdd058f34923e92ce8ac
 python:
   # https://docs.python.org/devguide/#status-of-python-branches
   - "2.7"
@@ -15,5 +18,5 @@ before_install:
 install:
   - pip install -e .
   - pip install --upgrade -r dev_requirements.txt
-script: PYTHONHASHSEED=random pytest
+script: PATH=hadoop/bin:$PATH PYTHONHASHSEED=random pytest
 after_success: codecov
