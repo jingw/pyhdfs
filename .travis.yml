@@ -4,7 +4,7 @@ cache:
     - download
 language: python
 env:
-  - VERSION=2.7.7 MD5=cc2f019f2a41458df8430c448bb9f760
+  - VERSION=2.8.5 MD5=8e48b6015464ed199d26080b2ff02d65
 python:
   # https://docs.python.org/devguide/#status-of-python-branches
   - "2.7"

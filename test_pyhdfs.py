@@ -448,8 +448,6 @@ class TestWebHDFS(unittest.TestCase):
         client = make_client()
         assert client.exists('/tmp')
         assert not client.exists('/does_not_exist')
-        with self.assertRaises(HdfsInvalidPathException):
-            client.exists('/:')
 
     def _setup_walk(self, client):
         def path(*args):
