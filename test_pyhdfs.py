@@ -369,7 +369,7 @@ class TestWebHDFS(unittest.TestCase):
         c = b'c'
         client.create(p1, a, blocksize=MIN_BLOCK_SIZE)
         client.create(p2, b, blocksize=MIN_BLOCK_SIZE)
-        client.create(p3, c)
+        client.create(p3, c, blocksize=MIN_BLOCK_SIZE)
         client.concat(p1, [p2, p3])
         with client.open(p1) as f:
             assert f.read() == a + b + c

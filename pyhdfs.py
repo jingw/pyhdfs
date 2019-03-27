@@ -4,7 +4,8 @@ For details on the WebHDFS endpoints, see the Hadoop documentation:
 
 - https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html
 - https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html
-"""
+- https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/filesystem/filesystem.html
+"""  # noqa: E501
 from __future__ import absolute_import, print_function, unicode_literals
 import base64
 import binascii
@@ -444,10 +445,8 @@ class HdfsClient(object):
     def concat(self, target, sources, **kwargs):
         """Concat existing files together.
 
-        Conditions:
-
-        - The last block in the target file (``path``) must be full.
-        - All blocks must be the same size, except possibly the last block.
+        For preconditions, see
+        https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/filesystem/filesystem.html#void_concatPath_p_Path_sources
 
         :param target: the path to the target destination.
         :param sources: the paths to the sources to use for the concatenation.
