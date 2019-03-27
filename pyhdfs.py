@@ -259,7 +259,9 @@ class HdfsClient(object):
     they find the active NameNode.
 
     :param hosts: List of NameNode HTTP host:port strings, either as ``list`` or a comma separated
-        string. Port defaults to 50070 if left unspecified.
+        string. Port defaults to 50070 if left unspecified. Note that in Hadoop 3, the default
+        NameNode HTTP port changed to 9870; the old default of 50070 is left as-is for backwards
+        compatibility.
     :type hosts: list or str
     :param randomize_hosts: By default randomize host selection.
     :type randomize_hosts: bool

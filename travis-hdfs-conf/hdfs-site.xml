@@ -21,4 +21,8 @@
     <name>dfs.replication</name>
     <value>1</value>
   </property>
+  <property>
+    <name>dfs.namenode.http-address</name>
+    <value>0.0.0.0:50070</value>
+  </property>
 </configuration>
