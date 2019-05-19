@@ -545,7 +545,7 @@ class TestWebHDFS(unittest.TestCase):
             HdfsClient(requests_kwargs={'url': 'test'})
 
     def test_requests_kwargs(self):
-        client = make_client(requests_kwargs={'proxies': {'http': 'localhost:99999'}})
+        client = make_client(requests_kwargs={'proxies': {'http': 'localhost:65535'}})
         with self.assertRaises(HdfsNoServerException):
             client.get_file_status('/')
 
