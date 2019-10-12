@@ -8,11 +8,9 @@ env:
   - VERSION=3.2.1 MD5=489ceea09aa6c78bde5c2241f9da742d
 python:
   # https://docs.python.org/devguide/#status-of-python-branches
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
-  - "pypy3"
 before_install:
   - ./install-hdfs.sh
   - pip install codecov

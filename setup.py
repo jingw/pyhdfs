@@ -7,7 +7,9 @@ from setuptools import setup
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     long_description = readme.read()
 with open(os.path.join(os.path.dirname(__file__), 'pyhdfs.py')) as py:
-    version = re.search(r"__version__ = '(.+?)'", py.read()).group(1)
+    version_match = re.search(r"__version__ = '(.+?)'", py.read())
+    assert version_match
+    version = version_match.group(1)
 with open(os.path.join(os.path.dirname(__file__), 'dev_requirements.txt')) as dev_requirements:
     tests_require = dev_requirements.read().splitlines()
 
