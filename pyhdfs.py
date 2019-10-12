@@ -188,6 +188,18 @@ class _BoilerplateClass(Dict[str, object]):
         return not self.__eq__(other)
 
 
+class TypeQuota(_BoilerplateClass):
+    """
+    :param consumed: The storage type space consumed.
+    :type consumed: int
+    :param quota: The storage type quota.
+    :type quota: int
+    """
+
+    consumed: int
+    quota: int
+
+
 class ContentSummary(_BoilerplateClass):
     """
     :param directoryCount: The number of directories.
@@ -202,8 +214,8 @@ class ContentSummary(_BoilerplateClass):
     :type spaceConsumed: int
     :param spaceQuota: The disk space quota.
     :type spaceQuota: int
-    :param typeQuota:
-    :type typeQuota: Optional[object]
+    :param typeQuota: Quota usage for ARCHIVE, DISK, SSD
+    :type typeQuota: Dict[str, TypeQuota]
     """
 
     directoryCount: int
@@ -212,7 +224,7 @@ class ContentSummary(_BoilerplateClass):
     quota: int
     spaceConsumed: int
     spaceQuota: int
-    typeQuota: Optional[object]
+    typeQuota: Dict[str, TypeQuota]
 
 
 class FileChecksum(_BoilerplateClass):
@@ -618,8 +630,10 @@ class HdfsClient(object):
 
     def get_content_summary(self, path: str, **kwargs: _PossibleArgumentTypes) -> ContentSummary:
         """Return the :py:class:`ContentSummary` of a given Path."""
-        return ContentSummary(
-            **_json(self._get(path, 'GETCONTENTSUMMARY', **kwargs))['ContentSummary'])
+        data = _json(self._get(path, 'GETCONTENTSUMMARY', **kwargs))['ContentSummary']
+        if 'typeQuota' in data:
+            data['typeQuota'] = {k: TypeQuota(**v) for k, v in data['typeQuota'].items()}
+        return ContentSummary(**data)
 
     def get_file_checksum(self, path: str, **kwargs: _PossibleArgumentTypes) -> FileChecksum:
         """Get the checksum of a file.

@@ -18,10 +18,7 @@ TYPE_MAPPING = {
 def to_py_type(v: Dict[str, Any]) -> str:
     if 'type' in v:
         t = TYPE_MAPPING.get(v['type'], v['type'])
-        if v.get('required'):
-            return t
-        else:
-            return 'Optional[{}]'.format(t)
+        return t
     if 'enum' in v:
         return 'str'
     raise AssertionError(v)

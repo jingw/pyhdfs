@@ -30,6 +30,7 @@ from pyhdfs import HdfsNoServerException
 from pyhdfs import HdfsPathIsNotEmptyDirectoryException
 from pyhdfs import HdfsSnapshotException
 from pyhdfs import HdfsUnsupportedOperationException
+from pyhdfs import TypeQuota
 
 TEST_DIR = '/tmp/pyhdfs_test'
 TEST_FILE = posixpath.join(TEST_DIR, 'some file')
@@ -140,6 +141,19 @@ class TestWebHDFS(unittest.TestCase):
             client.delete(TEST_DIR)
         assert client.delete(TEST_DIR, recursive=True)
         assert not client.delete(TEST_DIR, recursive=True)
+
+    @unittest.skipIf(os.environ.get('VERSION') == '2.9.2', "Not supported on Hadoop 2")
+    def test_get_content_summary_quota(self) -> None:
+        # WebHDFS doesn't support the dfsadmin command to set quotas, so this test uses the CLI.
+        client = make_client()
+        self._make_empty_dir(client)
+        subprocess.check_call([
+            'hdfs', 'dfsadmin', '-setSpaceQuota', '10', '-storageType', 'ARCHIVE', TEST_DIR
+        ])
+        content_summary = client.get_content_summary(TEST_DIR)
+        assert content_summary.typeQuota == {
+            'ARCHIVE': TypeQuota(consumed=0, quota=10),
+        }
 
     def test_list_file(self) -> None:
         client = make_client()
@@ -382,8 +396,8 @@ class TestWebHDFS(unittest.TestCase):
         with self.assertRaises(HdfsSnapshotException):
             client.create_snapshot(TEST_DIR)
 
-        # WebHDFS doesn't support the dfsadmin command to enable snapshots, so this test makes
-        # some assumptions to turn them on.
+        # WebHDFS doesn't support the dfsadmin command to enable snapshots, so this test uses the
+        # CLI.
         subprocess.check_call(['hdfs', 'dfsadmin', '-allowSnapshot', TEST_DIR])
 
         path = client.create_snapshot(TEST_DIR, snapshotname='x')
