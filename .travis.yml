@@ -5,7 +5,7 @@ cache:
 language: python
 env:
   - VERSION=2.9.2 MD5=82db6a62febd8c2976d75b8bd5513315
-  - VERSION=3.0.3 MD5=88a615d8a2e883cd00c211b45ed33977
+  - VERSION=3.2.1 MD5=489ceea09aa6c78bde5c2241f9da742d
 python:
   # https://docs.python.org/devguide/#status-of-python-branches
   - "2.7"
