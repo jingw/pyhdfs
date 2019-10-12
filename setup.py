@@ -6,7 +6,7 @@ from setuptools import setup
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     long_description = readme.read()
-with open(os.path.join(os.path.dirname(__file__), 'pyhdfs.py')) as py:
+with open(os.path.join(os.path.dirname(__file__), 'pyhdfs', '__init__.py')) as py:
     version_match = re.search(r"__version__ = '(.+?)'", py.read())
     assert version_match
     version = version_match.group(1)
@@ -22,7 +22,7 @@ setup(
     author="Jing Wang",
     author_email="99jingw@gmail.com",
     license="MIT License",
-    py_modules=['pyhdfs'],
+    packages=['pyhdfs'],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
@@ -39,5 +39,6 @@ setup(
     tests_require=tests_require,
     package_data={
         '': ['*.rst'],
+        'pyhdfs': ['py.typed']
     },
 )
