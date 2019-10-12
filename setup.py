@@ -1,24 +1,8 @@
 #!/usr/bin/env python
 import os
 import re
-import sys
 
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
-
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        # import here, cause outside the eggs aren't loaded
-        import pytest
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
-
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     long_description = readme.read()
@@ -51,7 +35,6 @@ setup(
         'simplejson',
     ],
     tests_require=tests_require,
-    cmdclass={'test': PyTest},
     package_data={
         '': ['*.rst'],
     },
