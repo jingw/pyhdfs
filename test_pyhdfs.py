@@ -1,14 +1,12 @@
 # encoding: utf-8
-from __future__ import absolute_import, print_function, unicode_literals
-
 import logging
 import os
 import posixpath
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
-import mock
 import pytest
 import requests
 from requests.api import request as original_request
@@ -28,26 +26,6 @@ from pyhdfs import HdfsNoServerException
 from pyhdfs import HdfsPathIsNotEmptyDirectoryException
 from pyhdfs import HdfsSnapshotException
 from pyhdfs import HdfsUnsupportedOperationException
-
-try:
-    # Python 3
-    unittest.TestCase.assertCountEqual
-except AttributeError:  # pragma: no cover
-    # Python 2
-    unittest.TestCase.assertCountEqual = unittest.TestCase.assertItemsEqual
-
-try:
-    # Python 3.2
-    unittest.TestCase.assertRaisesRegex
-except AttributeError:
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
-
-
-try:
-    NotADirectoryError
-except NameError:  # pragma: no cover
-    # Python 2
-    NotADirectoryError = OSError
 
 TEST_DIR = '/tmp/pyhdfs_test'
 TEST_FILE = posixpath.join(TEST_DIR, 'some file')
@@ -545,7 +523,7 @@ class TestWebHDFS(unittest.TestCase):
             HdfsClient(requests_kwargs={'url': 'test'})
 
     def test_requests_kwargs(self):
-        client = make_client(requests_kwargs={'proxies': {'http': 'localhost:65535'}})
+        client = make_client(requests_kwargs={'proxies': {'http': 'http://localhost:65535'}})
         with self.assertRaises(HdfsNoServerException):
             client.get_file_status('/')
 

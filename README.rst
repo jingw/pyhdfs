@@ -70,7 +70,7 @@ Installing
 
 ``pip install pyhdfs``
 
-You'll need Python 2.7 or Python 3.
+Python 3 is required.
 
 Development testing
 ===================
@@ -86,18 +86,10 @@ First run ``install-hdfs.sh x.y.z``, which will download, extract, and run the H
 Then run the following commands.
 Note they will create and delete ``hdfs://localhost/tmp/pyhdfs_test``.
 
-Python 3::
+Commands::
 
-    virtualenv3 --no-site-packages env3
-    source env3/bin/activate
-    pip3 install -e .
-    pip3 install -r dev_requirements.txt
-    py.test
-
-And again for Python 2 (after ``deactivate``)::
-
-    virtualenv2 --no-site-packages env2
-    source env2/bin/activate
-    pip2 install -e .
-    pip2 install -r dev_requirements.txt
-    py.test
+    python3 -m venv env
+    source env/bin/activate
+    pip install -e .
+    pip install -r dev_requirements.txt
+    pytest

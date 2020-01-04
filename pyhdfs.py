@@ -6,11 +6,9 @@ For details on the WebHDFS endpoints, see the Hadoop documentation:
 - https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html
 - https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/filesystem/filesystem.html
 """  # noqa: E501
-from __future__ import absolute_import, print_function, unicode_literals
 import base64
 import binascii
 import getpass
-import io
 import logging
 import os
 import posixpath
@@ -19,34 +17,14 @@ import re
 import shutil
 import time
 import warnings
+from http import HTTPStatus
+from urllib.parse import quote as url_quote
+from urllib.parse import urlsplit
 
 import requests.api
 import requests.exceptions
 import simplejson
 import simplejson.scanner
-
-try:
-    # Python 3
-    import http.client as httplib
-    from urllib.parse import quote as url_quote
-    from urllib.parse import urlsplit
-except ImportError:  # pragma: no cover
-    # Python 2
-    import httplib
-    from urllib import quote as url_quote
-    from urlparse import urlsplit
-
-try:
-    basestring
-except NameError:  # pragma: no cover
-    # Python 3
-    basestring = str
-
-try:
-    NotADirectoryError
-except NameError:  # pragma: no cover
-    # Python 2
-    NotADirectoryError = OSError
 
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = '/webhdfs/v1'
@@ -349,7 +327,7 @@ class HdfsClient(object):
             self.hosts = [host] + [h for h in self.hosts if h != host]
             self._last_time_recorded_active = time.time()
 
-    def _request(self, method, path, op, expected_status=httplib.OK, **kwargs):
+    def _request(self, method, path, op, expected_status=HTTPStatus.OK, **kwargs):
         """Make a WebHDFS request against the NameNodes
 
         This function handles NameNode failover and error checking.
@@ -423,11 +401,11 @@ class HdfsClient(object):
         :type buffersize: int
         """
         metadata_response = self._put(
-            path, 'CREATE', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
+            path, 'CREATE', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
         assert not metadata_response.content
         data_response = self._requests_session.put(
             metadata_response.headers['location'], data=data, **self._requests_kwargs)
-        _check_response(data_response, expected_status=httplib.CREATED)
+        _check_response(data_response, expected_status=HTTPStatus.CREATED)
         assert not data_response.content
 
     def append(self, path, data, **kwargs):
@@ -438,7 +416,7 @@ class HdfsClient(object):
         :type buffersize: int
         """
         metadata_response = self._post(
-            path, 'APPEND', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
+            path, 'APPEND', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
         data_response = self._requests_session.post(
             metadata_response.headers['location'], data=data, **self._requests_kwargs)
         _check_response(data_response)
@@ -454,7 +432,7 @@ class HdfsClient(object):
         :param sources: the paths to the sources to use for the concatenation.
         :type sources: list
         """
-        if isinstance(sources, basestring):
+        if not isinstance(sources, list):
             raise ValueError("sources should be a list")
         if any(',' in s for s in sources):
             raise NotImplementedError("WebHDFS does not support commas in concat")
@@ -473,7 +451,7 @@ class HdfsClient(object):
         :rtype: file-like object
         """
         metadata_response = self._get(
-            path, 'OPEN', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
+            path, 'OPEN', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
         data_response = self._requests_session.get(
             metadata_response.headers['location'], stream=True, **self._requests_kwargs)
         _check_response(data_response)
@@ -554,7 +532,7 @@ class HdfsClient(object):
         :rtype: :py:class:`FileChecksum`
         """
         metadata_response = self._get(
-            path, 'GETFILECHECKSUM', expected_status=httplib.TEMPORARY_REDIRECT, **kwargs)
+            path, 'GETFILECHECKSUM', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
         assert not metadata_response.content
         data_response = self._requests_session.get(
             metadata_response.headers['location'], **self._requests_kwargs)
@@ -656,12 +634,10 @@ class HdfsClient(object):
                 result[k] = v[1:-1]
             elif encoding == 'hex':
                 assert attr['value'].startswith('0x')
-                # older python demands bytes, so we have to ascii encode
-                result[k] = binascii.unhexlify(v[2:].encode('ascii'))
+                result[k] = binascii.unhexlify(v[2:])
             elif encoding == 'base64':
                 assert attr['value'].startswith('0s')
-                # older python demands bytes, so we have to ascii encode
-                result[k] = base64.b64decode(v[2:].encode('ascii'))
+                result[k] = base64.b64decode(v[2:])
             else:
                 warnings.warn("Unexpected encoding {}".format(encoding))
                 result[k] = v
@@ -750,7 +726,7 @@ class HdfsClient(object):
 
         Takes all arguments that :py:meth:`create` takes.
         """
-        with io.open(localsrc, 'rb') as f:
+        with open(localsrc, 'rb') as f:
             self.create(dest, f, **kwargs)
 
     def copy_to_local(self, src, localdest, **kwargs):
@@ -759,7 +735,7 @@ class HdfsClient(object):
         Takes all arguments that :py:meth:`open` takes.
         """
         with self.open(src, **kwargs) as fsrc:
-            with io.open(localdest, 'wb') as fdst:
+            with open(localdest, 'wb') as fdst:
                 shutil.copyfileobj(fsrc, fdst)
 
     def get_active_namenode(self, max_staleness=None):
@@ -794,7 +770,7 @@ def _json(response):
             "Expected JSON. Is WebHDFS enabled? Got {!r}".format(response.text))
 
 
-def _check_response(response, expected_status=httplib.OK):
+def _check_response(response, expected_status=HTTPStatus.OK):
     if response.status_code == expected_status:
         return
     remote_exception = _json(response)['RemoteException']
