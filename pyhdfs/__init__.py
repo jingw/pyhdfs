@@ -41,7 +41,7 @@ import simplejson.scanner
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = '/webhdfs/v1'
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 _logger = logging.getLogger(__name__)
 
 _PossibleArgumentTypes = Union[str, int, None, List[str]]
