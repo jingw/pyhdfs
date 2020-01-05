@@ -10,8 +10,6 @@ with open(os.path.join(os.path.dirname(__file__), 'pyhdfs', '__init__.py')) as p
     version_match = re.search(r"__version__ = '(.+?)'", py.read())
     assert version_match
     version = version_match.group(1)
-with open(os.path.join(os.path.dirname(__file__), 'dev_requirements.txt')) as dev_requirements:
-    tests_require = dev_requirements.read().splitlines()
 
 setup(
     name="PyHDFS",
@@ -36,9 +34,7 @@ setup(
         'requests',
         'simplejson',
     ],
-    tests_require=tests_require,
     package_data={
-        '': ['*.rst'],
         'pyhdfs': ['py.typed']
     },
     python_requires='>=3.6',
