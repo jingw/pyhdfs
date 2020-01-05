@@ -41,4 +41,5 @@ setup(
         '': ['*.rst'],
         'pyhdfs': ['py.typed']
     },
+    python_requires='>=3.6',
 )
