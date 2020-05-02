@@ -4,15 +4,15 @@
 
 import datetime
 
-project = 'PyHDFS'
-author = 'Jing Wang'
-copyright = '{}, {}'.format(datetime.datetime.now().year, author)
+project = "PyHDFS"
+author = "Jing Wang"
+copyright = "{}, {}".format(datetime.datetime.now().year, author)
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
 ]
 
-master_doc = 'index'
+master_doc = "index"
 
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

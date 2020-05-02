@@ -39,9 +39,9 @@ import simplejson
 import simplejson.scanner
 
 DEFAULT_PORT = 50070
-WEBHDFS_PATH = '/webhdfs/v1'
+WEBHDFS_PATH = "/webhdfs/v1"
 
-__version__ = '0.3.1'
+__version__ = "0.3.1"
 _logger = logging.getLogger(__name__)
 
 _PossibleArgumentTypes = Union[str, int, None, List[str]]
@@ -49,12 +49,10 @@ _PossibleArgumentTypes = Union[str, int, None, List[str]]
 
 class HdfsException(Exception):
     """Base class for all errors while communicating with WebHDFS server"""
-    pass
 
 
 class HdfsNoServerException(HdfsException):
     """The client was not able to reach any of the given servers"""
-    pass
 
 
 class HdfsHttpException(HdfsException):
@@ -67,12 +65,18 @@ class HdfsHttpException(HdfsException):
     :type status_code: int
     :param kwargs: any extra attributes in case Hadoop adds more stuff
     """
+
     _expected_status_code: Optional[int] = None
 
-    def __init__(self, message: str, exception: str, status_code: int, **kwargs: object) -> None:
-        assert self._expected_status_code is None or self._expected_status_code == status_code, (
-            "Expected status {} for {}, got {}".format(
-                self._expected_status_code, exception, status_code))
+    def __init__(
+        self, message: str, exception: str, status_code: int, **kwargs: object
+    ) -> None:
+        assert (
+            self._expected_status_code is None
+            or self._expected_status_code == status_code
+        ), "Expected status {} for {}, got {}".format(
+            self._expected_status_code, exception, status_code
+        )
         super(HdfsHttpException, self).__init__(message)
         self.message = message
         self.exception = exception
@@ -81,6 +85,7 @@ class HdfsHttpException(HdfsException):
 
 
 # NOTE: the following exceptions are referenced using globals() to build _EXCEPTION_CLASSES
+
 
 class HdfsIllegalArgumentException(HdfsHttpException):
     _expected_status_code = 400
@@ -157,7 +162,8 @@ class HdfsRuntimeException(HdfsHttpException):
 
 
 _EXCEPTION_CLASSES: Dict[str, Type[HdfsHttpException]] = {
-    name: member for name, member in globals().items()
+    name: member
+    for name, member in globals().items()
     if isinstance(member, type) and issubclass(member, HdfsHttpException)
 }
 
@@ -175,14 +181,11 @@ class _BoilerplateClass(Dict[str, object]):
         self.__dict__ = self
 
     def __repr__(self) -> str:
-        kvs = ['{}={!r}'.format(k, v) for k, v in self.items()]
-        return '{}({})'.format(self.__class__.__name__, ', '.join(kvs))
+        kvs = ["{}={!r}".format(k, v) for k, v in self.items()]
+        return "{}({})".format(self.__class__.__name__, ", ".join(kvs))
 
     def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, self.__class__) and
-            dict.__eq__(self, other)
-        )
+        return isinstance(other, self.__class__) and dict.__eq__(self, other)
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -319,16 +322,17 @@ class HdfsClient(object):
     :param requests_kwargs: Additional ``**kwargs`` to pass to requests
     """
 
-    def __init__(self,
-                 hosts: Union[str, Iterable[str]] = 'localhost',
-                 randomize_hosts: bool = True,
-                 user_name: Optional[str] = None,
-                 timeout: float = 20,
-                 max_tries: int = 2,
-                 retry_delay: float = 5,
-                 requests_session: Optional[requests.Session] = None,
-                 requests_kwargs: Optional[Dict[str, Any]] = None,
-                 ) -> None:
+    def __init__(
+        self,
+        hosts: Union[str, Iterable[str]] = "localhost",
+        randomize_hosts: bool = True,
+        user_name: Optional[str] = None,
+        timeout: float = 20,
+        max_tries: int = 2,
+        retry_delay: float = 5,
+        requests_session: Optional[requests.Session] = None,
+        requests_kwargs: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Create a new HDFS client"""
         if max_tries < 1:
             raise ValueError("Invalid max_tries: {}".format(max_tries))
@@ -344,19 +348,23 @@ class HdfsClient(object):
         self.timeout = timeout
         self.max_tries = max_tries
         self.retry_delay = retry_delay
-        self.user_name = user_name or os.environ.get('HADOOP_USER_NAME', getpass.getuser())
+        self.user_name = user_name or os.environ.get(
+            "HADOOP_USER_NAME", getpass.getuser()
+        )
         self._last_time_recorded_active: Optional[float] = None
-        self._requests_session = requests_session or cast(requests.Session, requests.api)
+        self._requests_session = requests_session or cast(
+            requests.Session, requests.api
+        )
         self._requests_kwargs = requests_kwargs or {}
-        for k in ('method', 'url', 'data', 'timeout', 'stream', 'params'):
+        for k in ("method", "url", "data", "timeout", "stream", "params"):
             if k in self._requests_kwargs:
                 raise ValueError("Cannot override requests argument {}".format(k))
 
     def _parse_hosts(self, hosts: Union[str, Iterable[str]]) -> List[str]:
-        host_list = re.split(r',|;', hosts) if isinstance(hosts, str) else list(hosts)
+        host_list = re.split(r",|;", hosts) if isinstance(hosts, str) else list(hosts)
         for i, host in enumerate(host_list):
-            if ':' not in host:
-                host_list[i] = '{:s}:{:d}'.format(host, DEFAULT_PORT)
+            if ":" not in host:
+                host_list[i] = "{:s}:{:d}".format(host, DEFAULT_PORT)
         if self.randomize_hosts:
             random.shuffle(host_list)
         return host_list
@@ -368,14 +376,14 @@ class HdfsClient(object):
         # Note that HDFS URIs are not URL encoded, so a '?' or a '#' in the URI is part of the
         # path
         parts = urlsplit(path, allow_fragments=False)
-        if not parts.path.startswith('/'):
+        if not parts.path.startswith("/"):
             raise ValueError("Path must be absolute, was given {}".format(path))
-        if parts.scheme not in ('', 'hdfs', 'hftp', 'webhdfs'):
+        if parts.scheme not in ("", "hdfs", "hftp", "webhdfs"):
             warnings.warn("Unexpected scheme {}".format(parts.scheme))
         assert not parts.fragment
         path = parts.path
         if parts.query:
-            path += '?' + parts.query
+            path += "?" + parts.query
         if parts.netloc:
             hosts = self._parse_hosts(parts.netloc)
         else:
@@ -387,18 +395,20 @@ class HdfsClient(object):
 
         The implementation of get_active_namenode relies on this reordering.
         """
-        if host in self.hosts:  # this check is for when user passes a host at request time
+        # this check is for when user passes a host at request time
+        if host in self.hosts:
             # Keep this thread safe: set hosts atomically and update it before the timestamp
             self.hosts = [host] + [h for h in self.hosts if h != host]
             self._last_time_recorded_active = time.time()
 
-    def _request(self,
-                 method: str,
-                 path: str,
-                 op: str,
-                 expected_status: HTTPStatus,
-                 **kwargs: _PossibleArgumentTypes,
-                 ) -> requests.Response:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        op: str,
+        expected_status: HTTPStatus,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> requests.Response:
         """Make a WebHDFS request against the NameNodes
 
         This function handles NameNode failover and error checking.
@@ -406,32 +416,49 @@ class HdfsClient(object):
         """
         hosts, path = self._parse_path(path)
         _transform_user_name_key(kwargs)
-        kwargs.setdefault('user.name', self.user_name)
+        kwargs.setdefault("user.name", self.user_name)
 
-        formatted_args = ' '.join('{}={}'.format(*t) for t in kwargs.items())
-        _logger.info("%s %s %s %s", op, path, formatted_args, ','.join(hosts))
-        kwargs['op'] = op
+        formatted_args = " ".join("{}={}".format(*t) for t in kwargs.items())
+        _logger.info("%s %s %s %s", op, path, formatted_args, ",".join(hosts))
+        kwargs["op"] = op
         for i in range(self.max_tries):
             log_level = logging.DEBUG if i < self.max_tries - 1 else logging.WARNING
             for host in hosts:
                 try:
                     response = self._requests_session.request(
                         method,
-                        'http://{}{}{}'.format(host, WEBHDFS_PATH, url_quote(path.encode('utf-8'))),
+                        "http://{}{}{}".format(
+                            host, WEBHDFS_PATH, url_quote(path.encode("utf-8"))
+                        ),
                         params=kwargs,  # type: ignore
                         timeout=self.timeout,
                         allow_redirects=False,
-                        **self._requests_kwargs
+                        **self._requests_kwargs,
                     )
-                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-                    _logger.log(log_level, "Failed to reach to %s (attempt %d/%d)",
-                                host, i + 1, self.max_tries, exc_info=True)
+                except (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                ):
+                    _logger.log(
+                        log_level,
+                        "Failed to reach to %s (attempt %d/%d)",
+                        host,
+                        i + 1,
+                        self.max_tries,
+                        exc_info=True,
+                    )
                     continue
                 try:
                     _check_response(response, expected_status)
                 except (HdfsRetriableException, HdfsStandbyException):
-                    _logger.log(log_level, "%s is in startup or standby mode (attempt %d/%d)",
-                                host, i + 1, self.max_tries, exc_info=True)
+                    _logger.log(
+                        log_level,
+                        "%s is in startup or standby mode (attempt %d/%d)",
+                        host,
+                        i + 1,
+                        self.max_tries,
+                        exc_info=True,
+                    )
                     continue
                 # Note: standby NN can still return basic validation errors, so non-StandbyException
                 # does not necessarily mean we have the active NN.
@@ -441,47 +468,52 @@ class HdfsClient(object):
                 time.sleep(self.retry_delay)
         raise HdfsNoServerException("Could not use any of the given hosts")
 
-    def _get(self,
-             path: str,
-             op: str,
-             expected_status: Any = HTTPStatus.OK,
-             **kwargs: _PossibleArgumentTypes,
-             ) -> requests.Response:
-        return self._request('get', path, op, expected_status, **kwargs)
+    def _get(
+        self,
+        path: str,
+        op: str,
+        expected_status: Any = HTTPStatus.OK,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> requests.Response:
+        return self._request("get", path, op, expected_status, **kwargs)
 
-    def _put(self,
-             path: str,
-             op: str,
-             expected_status: Any = HTTPStatus.OK,
-             **kwargs: _PossibleArgumentTypes,
-             ) -> requests.Response:
-        return self._request('put', path, op, expected_status, **kwargs)
+    def _put(
+        self,
+        path: str,
+        op: str,
+        expected_status: Any = HTTPStatus.OK,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> requests.Response:
+        return self._request("put", path, op, expected_status, **kwargs)
 
-    def _post(self,
-              path: str,
-              op: str,
-              expected_status: Any = HTTPStatus.OK,
-              **kwargs: _PossibleArgumentTypes,
-              ) -> requests.Response:
-        return self._request('post', path, op, expected_status, **kwargs)
+    def _post(
+        self,
+        path: str,
+        op: str,
+        expected_status: Any = HTTPStatus.OK,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> requests.Response:
+        return self._request("post", path, op, expected_status, **kwargs)
 
-    def _delete(self,
-                path: str,
-                op: str,
-                expected_status: Any = HTTPStatus.OK,
-                **kwargs: _PossibleArgumentTypes,
-                ) -> requests.Response:
-        return self._request('delete', path, op, expected_status, **kwargs)
+    def _delete(
+        self,
+        path: str,
+        op: str,
+        expected_status: Any = HTTPStatus.OK,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> requests.Response:
+        return self._request("delete", path, op, expected_status, **kwargs)
 
     #################################
     # File and Directory Operations #
     #################################
 
-    def create(self,
-               path: str,
-               data: Union[IO[bytes], bytes],
-               **kwargs: _PossibleArgumentTypes,
-               ) -> None:
+    def create(
+        self,
+        path: str,
+        data: Union[IO[bytes], bytes],
+        **kwargs: _PossibleArgumentTypes,
+    ) -> None:
         """Create a file at the given path.
 
         :param data: ``bytes`` or a ``file``-like object to upload
@@ -498,18 +530,21 @@ class HdfsClient(object):
         :type buffersize: int
         """
         metadata_response = self._put(
-            path, 'CREATE', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
+            path, "CREATE", expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs
+        )
         assert not metadata_response.content
         data_response = self._requests_session.put(
-            metadata_response.headers['location'], data=data, **self._requests_kwargs)
+            metadata_response.headers["location"], data=data, **self._requests_kwargs
+        )
         _check_response(data_response, expected_status=HTTPStatus.CREATED)
         assert not data_response.content
 
-    def append(self,
-               path: str,
-               data: Union[bytes, IO[bytes]],
-               **kwargs: _PossibleArgumentTypes,
-               ) -> None:
+    def append(
+        self,
+        path: str,
+        data: Union[bytes, IO[bytes]],
+        **kwargs: _PossibleArgumentTypes,
+    ) -> None:
         """Append to the given file.
 
         :param data: ``bytes`` or a ``file``-like object
@@ -517,13 +552,17 @@ class HdfsClient(object):
         :type buffersize: int
         """
         metadata_response = self._post(
-            path, 'APPEND', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
+            path, "APPEND", expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs
+        )
         data_response = self._requests_session.post(
-            metadata_response.headers['location'], data=data, **self._requests_kwargs)
+            metadata_response.headers["location"], data=data, **self._requests_kwargs
+        )
         _check_response(data_response)
         assert not data_response.content
 
-    def concat(self, target: str, sources: List[str], **kwargs: _PossibleArgumentTypes) -> None:
+    def concat(
+        self, target: str, sources: List[str], **kwargs: _PossibleArgumentTypes
+    ) -> None:
         """Concat existing files together.
 
         For preconditions, see
@@ -535,9 +574,9 @@ class HdfsClient(object):
         """
         if not isinstance(sources, list):
             raise ValueError("sources should be a list")
-        if any(',' in s for s in sources):
+        if any("," in s for s in sources):
             raise NotImplementedError("WebHDFS does not support commas in concat")
-        response = self._post(target, 'CONCAT', sources=','.join(sources), **kwargs)
+        response = self._post(target, "CONCAT", sources=",".join(sources), **kwargs)
         assert not response.content
 
     def open(self, path: str, **kwargs: _PossibleArgumentTypes) -> IO[bytes]:
@@ -552,9 +591,11 @@ class HdfsClient(object):
         :rtype: file-like object
         """
         metadata_response = self._get(
-            path, 'OPEN', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
+            path, "OPEN", expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs
+        )
         data_response = self._requests_session.get(
-            metadata_response.headers['location'], stream=True, **self._requests_kwargs)
+            metadata_response.headers["location"], stream=True, **self._requests_kwargs
+        )
         _check_response(data_response)
         return data_response.raw  # type: ignore
 
@@ -570,11 +611,13 @@ class HdfsClient(object):
         :returns: true if the directory creation succeeds; false otherwise
         :rtype: bool
         """
-        response = _json(self._put(path, 'MKDIRS', **kwargs))['boolean']
+        response = _json(self._put(path, "MKDIRS", **kwargs))["boolean"]
         assert isinstance(response, bool), type(response)
         return response
 
-    def create_symlink(self, link: str, destination: str, **kwargs: _PossibleArgumentTypes) -> None:
+    def create_symlink(
+        self, link: str, destination: str, **kwargs: _PossibleArgumentTypes
+    ) -> None:
         """Create a symbolic link at ``link`` pointing to ``destination``.
 
         :param link: the path to be created that points to target
@@ -584,16 +627,20 @@ class HdfsClient(object):
         :raises HdfsUnsupportedOperationException: This feature doesn't actually work, at least on
             CDH 5.3.0.
         """
-        response = self._put(link, 'CREATESYMLINK', destination=destination, **kwargs)
+        response = self._put(link, "CREATESYMLINK", destination=destination, **kwargs)
         assert not response.content
 
-    def rename(self, path: str, destination: str, **kwargs: _PossibleArgumentTypes) -> bool:
+    def rename(
+        self, path: str, destination: str, **kwargs: _PossibleArgumentTypes
+    ) -> bool:
         """Renames Path src to Path dst.
 
         :returns: true if rename is successful
         :rtype: bool
         """
-        response = _json(self._put(path, 'RENAME', destination=destination, **kwargs))['boolean']
+        response = _json(self._put(path, "RENAME", destination=destination, **kwargs))[
+            "boolean"
+        ]
         assert isinstance(response, bool), type(response)
         return response
 
@@ -606,51 +653,70 @@ class HdfsClient(object):
         :returns: true if delete is successful else false.
         :rtype: bool
         """
-        response = _json(self._delete(path, 'DELETE', **kwargs))['boolean']
+        response = _json(self._delete(path, "DELETE", **kwargs))["boolean"]
         assert isinstance(response, bool), type(response)
         return response
 
-    def get_file_status(self, path: str, **kwargs: _PossibleArgumentTypes) -> FileStatus:
+    def get_file_status(
+        self, path: str, **kwargs: _PossibleArgumentTypes
+    ) -> FileStatus:
         """Return a :py:class:`FileStatus` object that represents the path."""
-        return FileStatus(**_json(self._get(path, 'GETFILESTATUS', **kwargs))['FileStatus'])
+        return FileStatus(
+            **_json(self._get(path, "GETFILESTATUS", **kwargs))["FileStatus"]
+        )
 
-    def list_status(self, path: str, **kwargs: _PossibleArgumentTypes) -> List[FileStatus]:
+    def list_status(
+        self, path: str, **kwargs: _PossibleArgumentTypes
+    ) -> List[FileStatus]:
         """List the statuses of the files/directories in the given path if the path is a directory.
 
         :rtype: ``list`` of :py:class:`FileStatus` objects
         """
         return [
-            FileStatus(**item) for item in
-            _json(self._get(path, 'LISTSTATUS', **kwargs))['FileStatuses']['FileStatus']
+            FileStatus(**item)
+            for item in _json(self._get(path, "LISTSTATUS", **kwargs))["FileStatuses"][
+                "FileStatus"
+            ]
         ]
 
     ################################
     # Other File System Operations #
     ################################
 
-    def get_content_summary(self, path: str, **kwargs: _PossibleArgumentTypes) -> ContentSummary:
+    def get_content_summary(
+        self, path: str, **kwargs: _PossibleArgumentTypes
+    ) -> ContentSummary:
         """Return the :py:class:`ContentSummary` of a given Path."""
-        data = _json(self._get(path, 'GETCONTENTSUMMARY', **kwargs))['ContentSummary']
-        if 'typeQuota' in data:
-            data['typeQuota'] = {k: TypeQuota(**v) for k, v in data['typeQuota'].items()}
+        data = _json(self._get(path, "GETCONTENTSUMMARY", **kwargs))["ContentSummary"]
+        if "typeQuota" in data:
+            data["typeQuota"] = {
+                k: TypeQuota(**v) for k, v in data["typeQuota"].items()
+            }
         return ContentSummary(**data)
 
-    def get_file_checksum(self, path: str, **kwargs: _PossibleArgumentTypes) -> FileChecksum:
+    def get_file_checksum(
+        self, path: str, **kwargs: _PossibleArgumentTypes
+    ) -> FileChecksum:
         """Get the checksum of a file.
 
         :rtype: :py:class:`FileChecksum`
         """
         metadata_response = self._get(
-            path, 'GETFILECHECKSUM', expected_status=HTTPStatus.TEMPORARY_REDIRECT, **kwargs)
+            path,
+            "GETFILECHECKSUM",
+            expected_status=HTTPStatus.TEMPORARY_REDIRECT,
+            **kwargs,
+        )
         assert not metadata_response.content
         data_response = self._requests_session.get(
-            metadata_response.headers['location'], **self._requests_kwargs)
+            metadata_response.headers["location"], **self._requests_kwargs
+        )
         _check_response(data_response)
-        return FileChecksum(**_json(data_response)['FileChecksum'])
+        return FileChecksum(**_json(data_response)["FileChecksum"])
 
     def get_home_directory(self, **kwargs: _PossibleArgumentTypes) -> str:
         """Return the current user's home directory in this filesystem."""
-        response = _json(self._get('/', 'GETHOMEDIRECTORY', **kwargs))['Path']
+        response = _json(self._get("/", "GETHOMEDIRECTORY", **kwargs))["Path"]
         assert isinstance(response, str), type(response)
         return response
 
@@ -661,7 +727,7 @@ class HdfsClient(object):
             may be omitted.)
         :type permission: octal
         """
-        response = self._put(path, 'SETPERMISSION', **kwargs)
+        response = self._put(path, "SETPERMISSION", **kwargs)
         assert not response.content
 
     def set_owner(self, path: str, **kwargs: _PossibleArgumentTypes) -> None:
@@ -672,7 +738,7 @@ class HdfsClient(object):
         :param owner: user
         :param group: group
         """
-        response = self._put(path, 'SETOWNER', **kwargs)
+        response = self._put(path, "SETOWNER", **kwargs)
         assert not response.content
 
     def set_replication(self, path: str, **kwargs: _PossibleArgumentTypes) -> bool:
@@ -683,7 +749,7 @@ class HdfsClient(object):
         :returns: true if successful; false if file does not exist or is a directory
         :rtype: bool
         """
-        response = _json(self._put(path, 'SETREPLICATION', **kwargs))['boolean']
+        response = _json(self._put(path, "SETREPLICATION", **kwargs))["boolean"]
         assert isinstance(response, bool), type(response)
         return response
 
@@ -697,43 +763,47 @@ class HdfsClient(object):
             1970.
         :type accesstime: long
         """
-        response = self._put(path, 'SETTIMES', **kwargs)
+        response = self._put(path, "SETTIMES", **kwargs)
         assert not response.content
 
     ##########################################
     # Extended Attributes(XAttrs) Operations #
     ##########################################
 
-    def set_xattr(self,
-                  path: str,
-                  xattr_name: str,
-                  xattr_value: Optional[str],
-                  flag: str,
-                  **kwargs: _PossibleArgumentTypes,
-                  ) -> None:
+    def set_xattr(
+        self,
+        path: str,
+        xattr_name: str,
+        xattr_value: Optional[str],
+        flag: str,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> None:
         """Set an xattr of a file or directory.
 
         :param xattr_name: The name must be prefixed with the namespace followed by ``.``. For
             example, ``user.attr``.
         :param flag: ``CREATE`` or ``REPLACE``
         """
-        kwargs['xattr.name'] = xattr_name
-        kwargs['xattr.value'] = xattr_value
-        response = self._put(path, 'SETXATTR', flag=flag, **kwargs)
+        kwargs["xattr.name"] = xattr_name
+        kwargs["xattr.value"] = xattr_value
+        response = self._put(path, "SETXATTR", flag=flag, **kwargs)
         assert not response.content
 
-    def remove_xattr(self, path: str, xattr_name: str, **kwargs: _PossibleArgumentTypes) -> None:
+    def remove_xattr(
+        self, path: str, xattr_name: str, **kwargs: _PossibleArgumentTypes
+    ) -> None:
         """Remove an xattr of a file or directory."""
-        kwargs['xattr.name'] = xattr_name
-        response = self._put(path, 'REMOVEXATTR', **kwargs)
+        kwargs["xattr.name"] = xattr_name
+        response = self._put(path, "REMOVEXATTR", **kwargs)
         assert not response.content
 
-    def get_xattrs(self,
-                   path: str,
-                   xattr_name: Union[str, List[str], None] = None,
-                   encoding: str = 'text',
-                   **kwargs: _PossibleArgumentTypes,
-                   ) -> Dict[str, Union[bytes, str, None]]:
+    def get_xattrs(
+        self,
+        path: str,
+        xattr_name: Union[str, List[str], None] = None,
+        encoding: str = "text",
+        **kwargs: _PossibleArgumentTypes,
+    ) -> Dict[str, Union[bytes, str, None]]:
         """Get one or more xattr values for a file or directory.
 
         :param xattr_name: ``str`` to get one attribute, ``list`` to get multiple attributes,
@@ -744,26 +814,26 @@ class HdfsClient(object):
             unicode string. With hex or base64 encoding, the value will be a byte array.
         :rtype: dict
         """
-        kwargs['xattr.name'] = xattr_name
+        kwargs["xattr.name"] = xattr_name
         json: List[Dict[str, Optional[str]]] = _json(
-            self._get(path, 'GETXATTRS', encoding=encoding, **kwargs)
-        )['XAttrs']
+            self._get(path, "GETXATTRS", encoding=encoding, **kwargs)
+        )["XAttrs"]
         # Decode the result
         result: Dict[str, Union[bytes, str, None]] = {}
         for attr in json:
-            k = attr['name']
+            k = attr["name"]
             assert k is not None
-            v = attr['value']
+            v = attr["value"]
             if v is None:
                 result[k] = None
-            elif encoding == 'text':
+            elif encoding == "text":
                 assert v.startswith('"') and v.endswith('"')
                 result[k] = v[1:-1]
-            elif encoding == 'hex':
-                assert v.startswith('0x')
+            elif encoding == "hex":
+                assert v.startswith("0x")
                 result[k] = binascii.unhexlify(v[2:])
-            elif encoding == 'base64':
-                assert v.startswith('0s')
+            elif encoding == "base64":
+                assert v.startswith("0s")
                 result[k] = base64.b64decode(v[2:])
             else:
                 warnings.warn("Unexpected encoding {}".format(encoding))
@@ -775,7 +845,9 @@ class HdfsClient(object):
 
         :rtype: list
         """
-        result = simplejson.loads(_json(self._get(path, 'LISTXATTRS', **kwargs))['XAttrNames'])
+        result = simplejson.loads(
+            _json(self._get(path, "LISTXATTRS", **kwargs))["XAttrNames"]
+        )
         assert isinstance(result, list), type(result)
         return result
 
@@ -790,28 +862,34 @@ class HdfsClient(object):
         :param snapshotname: The name of the snapshot
         :returns: the snapshot path
         """
-        response = _json(self._put(path, 'CREATESNAPSHOT', **kwargs))['Path']
+        response = _json(self._put(path, "CREATESNAPSHOT", **kwargs))["Path"]
         assert isinstance(response, str), type(response)
         return response
 
-    def delete_snapshot(self,
-                        path: str,
-                        snapshotname: str,
-                        **kwargs: _PossibleArgumentTypes,
-                        ) -> None:
+    def delete_snapshot(
+        self, path: str, snapshotname: str, **kwargs: _PossibleArgumentTypes,
+    ) -> None:
         """Delete a snapshot of a directory"""
-        response = self._delete(path, 'DELETESNAPSHOT', snapshotname=snapshotname, **kwargs)
+        response = self._delete(
+            path, "DELETESNAPSHOT", snapshotname=snapshotname, **kwargs
+        )
         assert not response.content
 
-    def rename_snapshot(self,
-                        path: str,
-                        oldsnapshotname: str,
-                        snapshotname: str,
-                        **kwargs: _PossibleArgumentTypes,
-                        ) -> None:
+    def rename_snapshot(
+        self,
+        path: str,
+        oldsnapshotname: str,
+        snapshotname: str,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> None:
         """Rename a snapshot"""
-        response = self._put(path, 'RENAMESNAPSHOT',
-                             oldsnapshotname=oldsnapshotname, snapshotname=snapshotname, **kwargs)
+        response = self._put(
+            path,
+            "RENAMESNAPSHOT",
+            oldsnapshotname=oldsnapshotname,
+            snapshotname=snapshotname,
+            **kwargs,
+        )
         assert not response.content
 
     ######################################################
@@ -822,8 +900,12 @@ class HdfsClient(object):
     def listdir(self, path: str, **kwargs: _PossibleArgumentTypes) -> List[str]:
         """Return a list containing names of files in the given path"""
         statuses = self.list_status(path, **kwargs)
-        if len(statuses) == 1 and statuses[0].pathSuffix == '' and statuses[0].type == 'FILE':
-            raise NotADirectoryError('Not a directory: {!r}'.format(path))
+        if (
+            len(statuses) == 1
+            and statuses[0].pathSuffix == ""
+            and statuses[0].type == "FILE"
+        ):
+            raise NotADirectoryError("Not a directory: {!r}".format(path))
         return [f.pathSuffix for f in statuses]
 
     def exists(self, path: str, **kwargs: _PossibleArgumentTypes) -> bool:
@@ -834,12 +916,13 @@ class HdfsClient(object):
         except HdfsFileNotFoundException:
             return False
 
-    def walk(self,
-             top: str,
-             topdown: bool = True,
-             onerror: Optional[Callable[[HdfsException], None]] = None,
-             **kwargs: _PossibleArgumentTypes,
-             ) -> Iterator[Tuple[str, List[str], List[str]]]:
+    def walk(
+        self,
+        top: str,
+        topdown: bool = True,
+        onerror: Optional[Callable[[HdfsException], None]] = None,
+        **kwargs: _PossibleArgumentTypes,
+    ) -> Iterator[Tuple[str, List[str], List[str]]]:
         """See ``os.walk`` for documentation"""
         try:
             listing = self.list_status(top, **kwargs)
@@ -850,9 +933,9 @@ class HdfsClient(object):
 
         dirnames, filenames = [], []
         for f in listing:
-            if f.type == 'DIRECTORY':
+            if f.type == "DIRECTORY":
                 dirnames.append(f.pathSuffix)
-            elif f.type == 'FILE':
+            elif f.type == "FILE":
                 filenames.append(f.pathSuffix)
             else:  # pragma: no cover
                 raise AssertionError("Unexpected type {}".format(f.type))
@@ -866,21 +949,25 @@ class HdfsClient(object):
         if not topdown:
             yield top, dirnames, filenames
 
-    def copy_from_local(self, localsrc: str, dest: str, **kwargs: _PossibleArgumentTypes) -> None:
+    def copy_from_local(
+        self, localsrc: str, dest: str, **kwargs: _PossibleArgumentTypes
+    ) -> None:
         """Copy a single file from the local file system to ``dest``
 
         Takes all arguments that :py:meth:`create` takes.
         """
-        with open(localsrc, 'rb') as f:
+        with open(localsrc, "rb") as f:
             self.create(dest, f, **kwargs)
 
-    def copy_to_local(self, src: str, localdest: str, **kwargs: _PossibleArgumentTypes) -> None:
+    def copy_to_local(
+        self, src: str, localdest: str, **kwargs: _PossibleArgumentTypes
+    ) -> None:
         """Copy a single file from ``src`` to the local file system
 
         Takes all arguments that :py:meth:`open` takes.
         """
         with self.open(src, **kwargs) as fsrc:
-            with open(localdest, 'wb') as fdst:
+            with open(localdest, "wb") as fdst:
                 shutil.copyfileobj(fsrc, fdst)
 
     def get_active_namenode(self, max_staleness: Optional[float] = None) -> str:
@@ -892,19 +979,21 @@ class HdfsClient(object):
         :type max_staleness: float
         :raises HdfsNoServerException: can't find an active NameNode
         """
-        if (max_staleness is None or
-                self._last_time_recorded_active is None or
-                self._last_time_recorded_active < time.time() - max_staleness):
+        if (
+            max_staleness is None
+            or self._last_time_recorded_active is None
+            or self._last_time_recorded_active < time.time() - max_staleness
+        ):
             # Make a cheap request and rely on the reordering in self._record_last_active
-            self.get_file_status('/')
+            self.get_file_status("/")
         return self.hosts[0]
 
 
 def _transform_user_name_key(kw_dict: Dict[str, _PossibleArgumentTypes]) -> None:
     """Convert user_name to user.name for convenience with python kwargs"""
-    if 'user_name' in kw_dict:
-        kw_dict['user.name'] = kw_dict['user_name']
-        del kw_dict['user_name']
+    if "user_name" in kw_dict:
+        kw_dict["user.name"] = kw_dict["user_name"]
+        del kw_dict["user_name"]
 
 
 def _json(response: requests.Response) -> Dict[str, Any]:
@@ -914,21 +1003,24 @@ def _json(response: requests.Response) -> Dict[str, Any]:
         return js
     except simplejson.scanner.JSONDecodeError:
         raise HdfsException(
-            "Expected JSON. Is WebHDFS enabled? Got {!r}".format(response.text))
+            "Expected JSON. Is WebHDFS enabled? Got {!r}".format(response.text)
+        )
 
 
-def _check_response(response: requests.Response,
-                    expected_status: HTTPStatus = HTTPStatus.OK,
-                    ) -> None:
+def _check_response(
+    response: requests.Response, expected_status: HTTPStatus = HTTPStatus.OK,
+) -> None:
     if response.status_code == expected_status:
         return
-    remote_exception: Dict[str, str] = _json(response)['RemoteException']
-    exception_name = remote_exception['exception']
-    python_name = 'Hdfs' + exception_name
+    remote_exception: Dict[str, str] = _json(response)["RemoteException"]
+    exception_name = remote_exception["exception"]
+    python_name = "Hdfs" + exception_name
     if python_name in _EXCEPTION_CLASSES:
         cls = _EXCEPTION_CLASSES[python_name]
     else:
         cls = HdfsHttpException
         # prefix the message with the exception name since we're not using a fancy class
-        remote_exception['message'] = exception_name + ' - ' + remote_exception['message']
+        remote_exception["message"] = (
+            exception_name + " - " + remote_exception["message"]
+        )
     raise cls(status_code=response.status_code, **remote_exception)
