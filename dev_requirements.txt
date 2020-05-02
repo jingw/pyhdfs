@@ -1,6 +1,6 @@
+flake8
 mypy
 pytest
 pytest-cov
-pytest-flake8
 pytest-random
 sphinx
