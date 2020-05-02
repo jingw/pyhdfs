@@ -81,6 +81,9 @@ Development testing
 .. image:: http://codecov.io/github/jingw/pyhdfs/coverage.svg?branch=master
     :target: http://codecov.io/github/jingw/pyhdfs?branch=master
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+
 First run ``install-hdfs.sh x.y.z``, which will download, extract, and run the HDFS NN/DN processes in the current directory.
 (Replace ``x.y.z`` with a real version.)
 Then run the following commands.
