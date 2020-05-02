@@ -5,11 +5,11 @@ import posixpath
 import subprocess
 import tempfile
 import unittest
-from unittest import mock
 from http import HTTPStatus
 from typing import Any
 from typing import Callable
 from typing import cast
+from unittest import mock
 
 import pytest
 import requests
@@ -605,6 +605,9 @@ class TestTools(unittest.TestCase):
 
     def test_flake8(self) -> None:
         subprocess.check_call(["flake8"], cwd=os.path.dirname(__file__))
+
+    def test_isort(self) -> None:
+        subprocess.check_call(["isort", "--check-only"], cwd=os.path.dirname(__file__))
 
     def test_mypy(self) -> None:
         subprocess.check_call(["mypy", os.path.dirname(__file__)])
