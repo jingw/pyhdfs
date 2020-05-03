@@ -77,7 +77,7 @@ class HdfsHttpException(HdfsException):
         ), "Expected status {} for {}, got {}".format(
             self._expected_status_code, exception, status_code
         )
-        super(HdfsHttpException, self).__init__(message)
+        super().__init__(message)
         self.message = message
         self.exception = exception
         self.status_code = status_code
@@ -177,7 +177,7 @@ class _BoilerplateClass(Dict[str, object]):
     """
 
     def __init__(self, **kwargs: object) -> None:
-        super(_BoilerplateClass, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.__dict__ = self
 
     def __repr__(self) -> str:
