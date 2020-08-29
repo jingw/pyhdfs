@@ -867,7 +867,10 @@ class HdfsClient(object):
         return response
 
     def delete_snapshot(
-        self, path: str, snapshotname: str, **kwargs: _PossibleArgumentTypes,
+        self,
+        path: str,
+        snapshotname: str,
+        **kwargs: _PossibleArgumentTypes,
     ) -> None:
         """Delete a snapshot of a directory"""
         response = self._delete(
@@ -967,7 +970,7 @@ class HdfsClient(object):
         Takes all arguments that :py:meth:`open` takes.
         """
         with self.open(src, **kwargs) as fsrc:
-            with open(localdest, "wb") as fdst:
+            with open(localdest, "wb") as fdst:  # type: IO[bytes]
                 shutil.copyfileobj(fsrc, fdst)
 
     def get_active_namenode(self, max_staleness: Optional[float] = None) -> str:
@@ -1008,7 +1011,8 @@ def _json(response: requests.Response) -> Dict[str, Any]:
 
 
 def _check_response(
-    response: requests.Response, expected_status: HTTPStatus = HTTPStatus.OK,
+    response: requests.Response,
+    expected_status: HTTPStatus = HTTPStatus.OK,
 ) -> None:
     if response.status_code == expected_status:
         return

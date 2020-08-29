@@ -324,7 +324,8 @@ class TestWebHDFS(unittest.TestCase):
                 self.fail("should have raised something")  # pragma: no cover
 
     def test_unrecognized_exception(self) -> None:
-        """An exception that we don't have a python class for should fall back to HdfsHttpException
+        """An exception that we don't have a python class for should fall back to
+        HdfsHttpException.
         """
         client = make_client()
 
@@ -607,7 +608,9 @@ class TestTools(unittest.TestCase):
         subprocess.check_call(["flake8"], cwd=os.path.dirname(__file__))
 
     def test_isort(self) -> None:
-        subprocess.check_call(["isort", "--check-only"], cwd=os.path.dirname(__file__))
+        subprocess.check_call(
+            ["isort", "--check-only", "--diff", os.path.dirname(__file__)]
+        )
 
     def test_mypy(self) -> None:
         subprocess.check_call(["mypy", os.path.dirname(__file__)])
