@@ -12,7 +12,7 @@ fi
 mkdir -p hadoop
 tar -xzf "$tgz" -C hadoop --strip-components 1
 
-cp travis-hdfs-conf/* hadoop/etc/hadoop
+cp test-hdfs-conf/* hadoop/etc/hadoop
 
 hadoop/bin/hdfs namenode -format
 hadoop/bin/hdfs namenode > namenode.log 2>&1 &

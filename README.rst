@@ -75,8 +75,8 @@ Python 3 is required.
 Development testing
 ===================
 
-.. image:: https://travis-ci.org/jingw/pyhdfs.svg?branch=master
-    :target: https://travis-ci.org/jingw/pyhdfs
+.. image:: https://github.com/jingw/pyhdfs/workflows/CI/badge.svg
+    :target: https://github.com/jingw/pyhdfs/actions?query=workflow%3ACI
 
 .. image:: http://codecov.io/github/jingw/pyhdfs/coverage.svg?branch=master
     :target: http://codecov.io/github/jingw/pyhdfs?branch=master

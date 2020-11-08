@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # https://docs.python.org/devguide/#status-of-python-branches
+        python-version: [3.6, 3.7, 3.8]
+        env:
+          - VERSION=2.9.2 MD5=82db6a62febd8c2976d75b8bd5513315
+          - VERSION=3.2.1 MD5=489ceea09aa6c78bde5c2241f9da742d
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        with:
+          # https://cwiki.apache.org/confluence/display/HADOOP/Hadoop+Java+Versions
+          java-version: 8
+      - name: Cache download
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-download
+        with:
+          path: download
+          key: ${{ matrix.env }}
+      - name: Install HDFS
+        run: ${{ matrix.env }} ./install-hdfs.sh
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install --upgrade -r dev_requirements.txt
+      - name: pytest
+        run: PATH=hadoop/bin:$PATH PYTHONHASHSEED=random pytest
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
