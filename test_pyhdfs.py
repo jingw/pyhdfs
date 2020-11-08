@@ -364,7 +364,9 @@ class TestWebHDFS(unittest.TestCase):
         with pytest.warns(UserWarning) as record:
             client.get_file_status("foobar://localhost:50070/")
         assert len(record) == 1
-        assert record[0].message.args[0] == "Unexpected scheme foobar"
+        message = record[0].message
+        assert isinstance(message, Warning)
+        assert message.args[0] == "Unexpected scheme foobar"
         assert client.hosts == ["does_not_exist:50070"]
 
     def test_concat(self) -> None:
