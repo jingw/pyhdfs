@@ -14,7 +14,7 @@ jobs:
         # https://docs.python.org/devguide/#status-of-python-branches
         python-version: [3.6, 3.7, 3.8]
         env:
-          - VERSION=2.9.2 MD5=82db6a62febd8c2976d75b8bd5513315
+          - VERSION=2.10.1 MD5=13939bb85bd85bb376810c1e1d6f6bc8
           - VERSION=3.2.1 MD5=489ceea09aa6c78bde5c2241f9da742d
 
     steps:
