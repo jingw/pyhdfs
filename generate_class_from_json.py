@@ -3,9 +3,10 @@ Convert a JSON schema from the WebHDFS docs into a class
 
 https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html#ContentSummary_JSON_Schema
 """
+from __future__ import annotations
+
 import sys
 from typing import Any
-from typing import Dict
 
 import simplejson as json
 
@@ -15,7 +16,7 @@ TYPE_MAPPING = {
 }
 
 
-def to_py_type(v: Dict[str, Any]) -> str:
+def to_py_type(v: dict[str, Any]) -> str:
     if "type" in v:
         t = TYPE_MAPPING.get(v["type"], v["type"])
         return t
