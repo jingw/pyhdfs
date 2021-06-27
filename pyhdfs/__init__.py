@@ -430,7 +430,7 @@ class HdfsClient(object):
                         "http://{}{}{}".format(
                             host, WEBHDFS_PATH, url_quote(path.encode("utf-8"))
                         ),
-                        params=kwargs,  # type: ignore
+                        params=kwargs,
                         timeout=self.timeout,
                         allow_redirects=False,
                         **self._requests_kwargs,
@@ -597,7 +597,7 @@ class HdfsClient(object):
             metadata_response.headers["location"], stream=True, **self._requests_kwargs
         )
         _check_response(data_response)
-        return data_response.raw  # type: ignore
+        return data_response.raw  # type: ignore[no-any-return]
 
     def mkdirs(self, path: str, **kwargs: _PossibleArgumentTypes) -> bool:
         """Create a directory with the provided permission.

@@ -6,3 +6,5 @@ pytest
 pytest-cov
 pytest-random
 sphinx
+types-requests
+types-simplejson

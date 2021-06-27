@@ -282,7 +282,7 @@ class TestWebHDFS(unittest.TestCase):
                 return _standby_response()
             elif "localhost" in url:
                 active_count[0] += 1
-                return original_request(method, url, **kwargs)
+                return original_request(method, url, **kwargs)  # type: ignore[arg-type]
             else:
                 self.fail("Unexpected url {}".format(url))  # pragma: no cover
 
@@ -350,7 +350,7 @@ class TestWebHDFS(unittest.TestCase):
                 assert e.status_code == 500
                 assert e.exception == "SomeUnknownException"
                 assert e.message == "SomeUnknownException - some_test_msg"
-                assert e.newThing == "1"  # type: ignore
+                assert e.newThing == "1"  # type: ignore[attr-defined]
             else:
                 self.fail("should have thrown")  # pragma: no cover
 
@@ -392,7 +392,7 @@ class TestWebHDFS(unittest.TestCase):
     def test_concat_invalid(self) -> None:
         client = make_client()
         with self.assertRaises(ValueError):
-            client.concat("/a", "b")  # type: ignore
+            client.concat("/a", "b")  # type: ignore[arg-type]
         with self.assertRaises(NotImplementedError):
             client.concat("/a", ["/,"])
 
