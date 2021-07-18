@@ -11,7 +11,6 @@ from typing import Callable
 from typing import cast
 from unittest import mock
 
-import pytest
 import requests
 from requests.api import request as original_request
 
@@ -37,10 +36,9 @@ TEST_FILE = posixpath.join(TEST_DIR, "some file")
 FILE_CONTENTS = b"lorem ipsum dolor sit amet"
 FILE_CONTENTS2 = b"some stuff"
 
-# Exclude control characters and special path characters
+# Exclude special path characters
 PATHOLOGICAL_NAME = (
-    "".join(chr(n) for n in range(32, 128) if chr(n) not in {"/", ":", ";"})
-    + "\b\t\n\f\r中文"
+    "".join(chr(n) for n in range(0, 150) if chr(n) not in {"/", ":"}) + "中文"
 )
 
 
@@ -354,21 +352,6 @@ class TestWebHDFS(unittest.TestCase):
             else:
                 self.fail("should have thrown")  # pragma: no cover
 
-    def test_host_in_request(self) -> None:
-        """Client should support specifying host afterwards"""
-        client = make_client("does_not_exist")
-        with self.assertRaises(HdfsNoServerException):
-            client.get_file_status("/")
-        client.get_file_status("//localhost/")
-        client.get_file_status("hdfs://localhost:50070/")
-        with pytest.warns(UserWarning) as record:
-            client.get_file_status("foobar://localhost:50070/")
-        assert len(record) == 1
-        message = record[0].message
-        assert isinstance(message, Warning)
-        assert message.args[0] == "Unexpected scheme foobar"
-        assert client.hosts == ["does_not_exist:50070"]
-
     def test_concat(self) -> None:
         MIN_BLOCK_SIZE = 1024 * 1024
         client = make_client()
@@ -486,14 +469,6 @@ class TestWebHDFS(unittest.TestCase):
             (path("a1", "b1"), [], ["f2"]),
             (path("a1", "b2"), [], []),
             (path("a2"), [], []),
-        ]
-        prefix = "//localhost"
-        assert list(client.walk(prefix + TEST_DIR, topdown=False)) == [
-            (prefix + path("a1", "b1"), [], ["f2"]),
-            (prefix + path("a1", "b2"), [], []),
-            (prefix + path("a1"), ["b1", "b2"], []),
-            (prefix + path("a2"), [], []),
-            (prefix + path(), ["a1", "a2"], ["f1"]),
         ]
 
     def test_walk_error(self) -> None:

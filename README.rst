@@ -52,12 +52,6 @@ Example usage:
     True
 
 
-You can also pass the hostname as part of the URI:
-
-.. code-block:: python
-
-    fs.list_status('//nn1.example.com:50070;nn2.example.com:50070/')
-
 The methods and return values generally map directly to `WebHDFS endpoints <https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html>`_.
 The client also provides convenience methods that mimic Python ``os`` methods and HDFS CLI commands (e.g. ``walk`` and ``copy_to_local``).
 

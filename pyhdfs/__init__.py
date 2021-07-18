@@ -31,7 +31,6 @@ from typing import Type
 from typing import Union
 from typing import cast
 from urllib.parse import quote as url_quote
-from urllib.parse import urlsplit
 
 import requests.api
 import requests.exceptions
@@ -369,37 +368,15 @@ class HdfsClient(object):
             random.shuffle(host_list)
         return host_list
 
-    def _parse_path(self, path: str) -> Tuple[List[str], str]:
-        """Return (hosts, path) tuple"""
-        # Support specifying another host via hdfs://host:port/path syntax
-        # We ignore the scheme and piece together the query and fragment
-        # Note that HDFS URIs are not URL encoded, so a '?' or a '#' in the URI is part of the
-        # path
-        parts = urlsplit(path, allow_fragments=False)
-        if not parts.path.startswith("/"):
-            raise ValueError("Path must be absolute, was given {}".format(path))
-        if parts.scheme not in ("", "hdfs", "hftp", "webhdfs"):
-            warnings.warn("Unexpected scheme {}".format(parts.scheme))
-        assert not parts.fragment
-        path = parts.path
-        if parts.query:
-            path += "?" + parts.query
-        if parts.netloc:
-            hosts = self._parse_hosts(parts.netloc)
-        else:
-            hosts = self.hosts
-        return hosts, path
-
     def _record_last_active(self, host: str) -> None:
         """Put host first in our host list, so we try it first next time
 
         The implementation of get_active_namenode relies on this reordering.
         """
-        # this check is for when user passes a host at request time
-        if host in self.hosts:
-            # Keep this thread safe: set hosts atomically and update it before the timestamp
-            self.hosts = [host] + [h for h in self.hosts if h != host]
-            self._last_time_recorded_active = time.time()
+        assert host in self.hosts
+        # Keep this thread safe: set hosts atomically and update it before the timestamp
+        self.hosts = [host] + [h for h in self.hosts if h != host]
+        self._last_time_recorded_active = time.time()
 
     def _request(
         self,
@@ -414,7 +391,9 @@ class HdfsClient(object):
         This function handles NameNode failover and error checking.
         All kwargs are passed as query params to the WebHDFS server.
         """
-        hosts, path = self._parse_path(path)
+        hosts = self.hosts
+        if not posixpath.isabs(path):
+            raise ValueError("Path must be absolute, was given {}".format(path))
         _transform_user_name_key(kwargs)
         kwargs.setdefault("user.name", self.user_name)
 
