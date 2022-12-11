@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # https://docs.python.org/devguide/#status-of-python-branches
-        python-version: [3.6, 3.7, 3.8]
+        # https://devguide.python.org/versions/#supported-versions
+        python-version: [3.7, 3.8, 3.9, '3.10', 3.11]
         env:
           - VERSION=2.10.1 MD5=13939bb85bd85bb376810c1e1d6f6bc8
           - VERSION=3.2.2 MD5=e7cebb6420657030539dc644ed7ee1f0
