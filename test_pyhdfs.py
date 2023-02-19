@@ -38,7 +38,7 @@ FILE_CONTENTS2 = b"some stuff"
 
 # Exclude special path characters
 PATHOLOGICAL_NAME = (
-    "".join(chr(n) for n in range(0, 150) if chr(n) not in {"/", ":"}) + "中文"
+    "".join(chr(n) for n in range(1, 150) if chr(n) not in {"/", ":"}) + "中文"
 )
 
 

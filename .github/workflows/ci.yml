@@ -14,8 +14,8 @@ jobs:
         # https://devguide.python.org/versions/#supported-versions
         python-version: [3.7, 3.8, 3.9, '3.10', 3.11]
         env:
-          - VERSION=2.10.1 MD5=13939bb85bd85bb376810c1e1d6f6bc8
-          - VERSION=3.2.2 MD5=e7cebb6420657030539dc644ed7ee1f0
+          - VERSION=2.10.2 MD5=003704f56d7d5dc72e7a04fe8147ff10
+          - VERSION=3.3.4 MD5=ae2caf4e19e215a50f13aa0b865c5079
 
     steps:
       - uses: actions/checkout@v2
