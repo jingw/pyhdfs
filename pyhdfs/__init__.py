@@ -949,7 +949,7 @@ class HdfsClient(object):
         Takes all arguments that :py:meth:`open` takes.
         """
         with self.open(src, **kwargs) as fsrc:
-            with open(localdest, "wb") as fdst:  # type: IO[bytes]
+            with open(localdest, "wb") as fdst:
                 shutil.copyfileobj(fsrc, fdst)
 
     def get_active_namenode(self, max_staleness: Optional[float] = None) -> str:
