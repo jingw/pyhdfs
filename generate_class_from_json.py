@@ -30,12 +30,13 @@ def main() -> None:
     print("class {}(_BoilerplateClass):".format(js["name"]))
     print('    """')
     for k, v in js["properties"][name]["properties"].items():
-        print("    :param {}: {}".format(k, v.get("description", "")))
-        print("    :type {}: {}".format(k, to_py_type(v)))
+        description = v.get("description", "")
+        print(f"    :param {k}: {description}")
+        print(f"    :type {k}: {to_py_type(v)}")
     print('    """')
     print()
     for k, v in js["properties"][name]["properties"].items():
-        print("    {}: {}".format(k, to_py_type(v)))
+        print(f"    {k}: {to_py_type(v)}")
 
 
 if __name__ == "__main__":

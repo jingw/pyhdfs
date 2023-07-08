@@ -5,6 +5,7 @@ mypy
 pytest
 pytest-cov
 pytest-random
+pyupgrade
 sphinx
 types-requests
 types-simplejson

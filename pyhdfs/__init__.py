@@ -180,7 +180,7 @@ class _BoilerplateClass(Dict[str, object]):
         self.__dict__ = self
 
     def __repr__(self) -> str:
-        kvs = ["{}={!r}".format(k, v) for k, v in self.items()]
+        kvs = [f"{k}={v!r}" for k, v in self.items()]
         return "{}({})".format(self.__class__.__name__, ", ".join(kvs))
 
     def __eq__(self, other: object) -> bool:
@@ -286,7 +286,7 @@ class FileStatus(_BoilerplateClass):
     childrenNum: int
 
 
-class HdfsClient(object):
+class HdfsClient:
     """HDFS client backed by WebHDFS.
 
     All functions take arbitrary query parameters to pass to WebHDFS, in addition to any documented
@@ -334,9 +334,9 @@ class HdfsClient(object):
     ) -> None:
         """Create a new HDFS client"""
         if max_tries < 1:
-            raise ValueError("Invalid max_tries: {}".format(max_tries))
+            raise ValueError(f"Invalid max_tries: {max_tries}")
         if retry_delay < 0:
-            raise ValueError("Invalid retry_delay: {}".format(retry_delay))
+            raise ValueError(f"Invalid retry_delay: {retry_delay}")
         self.randomize_hosts = randomize_hosts
         self.hosts = self._parse_hosts(hosts)
         if not self.hosts:
@@ -357,13 +357,13 @@ class HdfsClient(object):
         self._requests_kwargs = requests_kwargs or {}
         for k in ("method", "url", "data", "timeout", "stream", "params"):
             if k in self._requests_kwargs:
-                raise ValueError("Cannot override requests argument {}".format(k))
+                raise ValueError(f"Cannot override requests argument {k}")
 
     def _parse_hosts(self, hosts: Union[str, Iterable[str]]) -> List[str]:
         host_list = re.split(r",|;", hosts) if isinstance(hosts, str) else list(hosts)
         for i, host in enumerate(host_list):
             if ":" not in host:
-                host_list[i] = "{:s}:{:d}".format(host, DEFAULT_PORT)
+                host_list[i] = f"{host:s}:{DEFAULT_PORT:d}"
         if self.randomize_hosts:
             random.shuffle(host_list)
         return host_list
@@ -393,7 +393,7 @@ class HdfsClient(object):
         """
         hosts = self.hosts
         if not posixpath.isabs(path):
-            raise ValueError("Path must be absolute, was given {}".format(path))
+            raise ValueError(f"Path must be absolute, was given {path}")
         _transform_user_name_key(kwargs)
         kwargs.setdefault("user.name", self.user_name)
 
@@ -815,7 +815,7 @@ class HdfsClient(object):
                 assert v.startswith("0s")
                 result[k] = base64.b64decode(v[2:])
             else:
-                warnings.warn("Unexpected encoding {}".format(encoding))
+                warnings.warn(f"Unexpected encoding {encoding}")
                 result[k] = v
         return result
 
@@ -887,7 +887,7 @@ class HdfsClient(object):
             and statuses[0].pathSuffix == ""
             and statuses[0].type == "FILE"
         ):
-            raise NotADirectoryError("Not a directory: {!r}".format(path))
+            raise NotADirectoryError(f"Not a directory: {path!r}")
         return [f.pathSuffix for f in statuses]
 
     def exists(self, path: str, **kwargs: _PossibleArgumentTypes) -> bool:
@@ -920,14 +920,13 @@ class HdfsClient(object):
             elif f.type == "FILE":
                 filenames.append(f.pathSuffix)
             else:  # pragma: no cover
-                raise AssertionError("Unexpected type {}".format(f.type))
+                raise AssertionError(f"Unexpected type {f.type}")
 
         if topdown:
             yield top, dirnames, filenames
         for name in dirnames:
             new_path = posixpath.join(top, name)
-            for x in self.walk(new_path, topdown, onerror, **kwargs):
-                yield x
+            yield from self.walk(new_path, topdown, onerror, **kwargs)
         if not topdown:
             yield top, dirnames, filenames
 
@@ -984,9 +983,7 @@ def _json(response: requests.Response) -> Dict[str, Any]:
         assert isinstance(js, dict), type(js)
         return js
     except simplejson.scanner.JSONDecodeError:
-        raise HdfsException(
-            "Expected JSON. Is WebHDFS enabled? Got {!r}".format(response.text)
-        )
+        raise HdfsException(f"Expected JSON. Is WebHDFS enabled? Got {response.text!r}")
 
 
 def _check_response(

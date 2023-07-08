@@ -1,4 +1,3 @@
-# encoding: utf-8
 import logging
 import os
 import posixpath
@@ -282,7 +281,7 @@ class TestWebHDFS(unittest.TestCase):
                 active_count[0] += 1
                 return original_request(method, url, **kwargs)  # type: ignore[arg-type]
             else:
-                self.fail("Unexpected url {}".format(url))  # pragma: no cover
+                self.fail(f"Unexpected url {url}")  # pragma: no cover
 
         with mock.patch("requests.api.request", mock_request):
             client.get_file_status("/")

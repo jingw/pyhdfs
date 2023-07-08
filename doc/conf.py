@@ -6,7 +6,7 @@ import datetime
 
 project = "PyHDFS"
 author = "Jing Wang"
-copyright = "{}, {}".format(datetime.datetime.now().year, author)
+copyright = f"{datetime.datetime.now().year}, {author}"
 
 extensions = [
     "sphinx.ext.autodoc",
