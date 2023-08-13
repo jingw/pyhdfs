@@ -184,7 +184,7 @@ class _BoilerplateClass(Dict[str, object]):
         return "{}({})".format(self.__class__.__name__, ", ".join(kvs))
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__) and dict.__eq__(self, other)
+        return isinstance(other, self.__class__) and super().__eq__(other)
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
