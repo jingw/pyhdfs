@@ -8,4 +8,3 @@ pytest-random
 pyupgrade
 sphinx
 types-requests
-types-simplejson

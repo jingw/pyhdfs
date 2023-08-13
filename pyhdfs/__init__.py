@@ -9,6 +9,7 @@ For details on the WebHDFS endpoints, see the Hadoop documentation:
 import base64
 import binascii
 import getpass
+import json
 import logging
 import os
 import posixpath
@@ -34,8 +35,6 @@ from urllib.parse import quote as url_quote
 
 import requests.api
 import requests.exceptions
-import simplejson
-import simplejson.scanner
 
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = "/webhdfs/v1"
@@ -824,7 +823,7 @@ class HdfsClient:
 
         :rtype: list
         """
-        result = simplejson.loads(
+        result = json.loads(
             _json(self._get(path, "LISTXATTRS", **kwargs))["XAttrNames"]
         )
         assert isinstance(result, list), type(result)
@@ -982,7 +981,7 @@ def _json(response: requests.Response) -> Dict[str, Any]:
         js = response.json()
         assert isinstance(js, dict), type(js)
         return js
-    except simplejson.scanner.JSONDecodeError:
+    except json.decoder.JSONDecodeError:
         raise HdfsException(f"Expected JSON. Is WebHDFS enabled? Got {response.text!r}")
 
 
