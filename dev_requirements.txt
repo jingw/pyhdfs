@@ -7,4 +7,5 @@ pytest-cov
 pytest-random
 pyupgrade
 sphinx
+sphinx-rtd-theme
 types-requests
