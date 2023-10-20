@@ -17,6 +17,7 @@ TYPE_MAPPING = {
 def to_py_type(v: Dict[str, Any]) -> str:
     if "type" in v:
         t = TYPE_MAPPING.get(v["type"], v["type"])
+        assert isinstance(t, str)
         return t
     if "enum" in v:
         return "str"
