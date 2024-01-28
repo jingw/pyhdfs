@@ -6,6 +6,7 @@ For details on the WebHDFS endpoints, see the Hadoop documentation:
 - https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html
 - https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/filesystem/filesystem.html
 """  # noqa: E501
+
 import base64
 import binascii
 import getpass

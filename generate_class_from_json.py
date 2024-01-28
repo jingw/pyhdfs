@@ -3,6 +3,7 @@ Convert a JSON schema from the WebHDFS docs into a class
 
 https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.html#ContentSummary_JSON_Schema
 """
+
 import json
 import sys
 from typing import Any
