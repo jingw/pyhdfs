@@ -576,7 +576,7 @@ class HdfsClient:
             metadata_response.headers["location"], stream=True, **self._requests_kwargs
         )
         _check_response(data_response)
-        return data_response.raw  # type: ignore[no-any-return]
+        return data_response.raw  # type: ignore[return-value]
 
     def mkdirs(self, path: str, **kwargs: _PossibleArgumentTypes) -> bool:
         """Create a directory with the provided permission.
