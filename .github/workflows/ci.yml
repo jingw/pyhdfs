@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         # https://devguide.python.org/versions/#supported-versions
-        # also see pyupgrade in test_tools.py
-        python-version: [3.8, 3.9, '3.10', 3.11]
+        # also see pyupgrade in test_tools.py and python_requires in setup.cfg
+        python-version: [3.9, '3.10', 3.11, 3.12]
         env:
           - VERSION=2.10.2 MD5=003704f56d7d5dc72e7a04fe8147ff10
           - VERSION=3.3.4 MD5=ae2caf4e19e215a50f13aa0b865c5079

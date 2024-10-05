@@ -7,7 +7,6 @@ https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/WebHDFS.h
 import json
 import sys
 from typing import Any
-from typing import Dict
 
 TYPE_MAPPING = {
     "integer": "int",
@@ -15,7 +14,7 @@ TYPE_MAPPING = {
 }
 
 
-def to_py_type(v: Dict[str, Any]) -> str:
+def to_py_type(v: dict[str, Any]) -> str:
     if "type" in v:
         t = TYPE_MAPPING.get(v["type"], v["type"])
         assert isinstance(t, str)
