@@ -3,7 +3,6 @@ import os
 import posixpath
 import subprocess
 import tempfile
-import unittest
 from http import HTTPStatus
 from typing import Any
 from typing import Callable
@@ -142,7 +141,6 @@ def test_basic_operations() -> None:
     assert not client.delete(TEST_DIR, recursive=True)
 
 
-@unittest.skipIf(os.environ.get("VERSION") == "2.9.2", "Not supported on Hadoop 2")
 def test_get_content_summary_quota() -> None:
     # WebHDFS doesn't support the dfsadmin command to set quotas, so this test uses the CLI.
     client = make_client()

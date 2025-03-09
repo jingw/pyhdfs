@@ -16,7 +16,7 @@ jobs:
         python-version: [3.9, '3.10', 3.11, 3.12]
         env:
           - VERSION=2.10.2 MD5=003704f56d7d5dc72e7a04fe8147ff10
-          - VERSION=3.3.4 MD5=ae2caf4e19e215a50f13aa0b865c5079
+          - VERSION=3.4.1 MD5=6dc51978c1c115136b1480dc71ad546b
 
     steps:
       - uses: actions/checkout@v2
