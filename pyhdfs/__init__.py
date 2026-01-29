@@ -312,6 +312,9 @@ class HdfsClient:
     :type max_tries: int
     :param retry_delay: How long to wait in seconds before going through NameNodes again
     :type retry_delay: float
+    :type max_tries: int
+    :param schema: Use `http` by default or `https` for secure HDFS cluster
+    :type schema: str
     :param requests_session: A ``requests.Session`` object for advanced usage. If absent, this
         class will use the default requests behavior of making a new session per HTTP request.
         Caller is responsible for closing session.
@@ -326,6 +329,7 @@ class HdfsClient:
         timeout: float = 20,
         max_tries: int = 2,
         retry_delay: float = 5,
+        schema: str = "http",
         requests_session: requests.Session | None = None,
         requests_kwargs: dict[str, Any] | None = None,
     ) -> None:
@@ -344,6 +348,7 @@ class HdfsClient:
         self.timeout = timeout
         self.max_tries = max_tries
         self.retry_delay = retry_delay
+        self.schema = schema.lower()
         self.user_name = user_name or os.environ.get(
             "HADOOP_USER_NAME", getpass.getuser()
         )
@@ -403,9 +408,7 @@ class HdfsClient:
                 try:
                     response = self._requests_session.request(
                         method,
-                        "http://{}{}{}".format(
-                            host, WEBHDFS_PATH, url_quote(path.encode("utf-8"))
-                        ),
+                        f"{self.schema}://{host}{WEBHDFS_PATH}{url_quote(path.encode('utf-8'))}",
                         params=kwargs,
                         timeout=self.timeout,
                         allow_redirects=False,
