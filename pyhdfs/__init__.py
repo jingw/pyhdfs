@@ -37,7 +37,7 @@ import requests.exceptions
 DEFAULT_PORT = 50070
 WEBHDFS_PATH = "/webhdfs/v1"
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 _logger = logging.getLogger(__name__)
 
 _PossibleArgumentTypes = Union[str, int, None, list[str]]
